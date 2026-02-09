@@ -124,33 +124,15 @@
     /* Logo */
     .logo {
       text-align: center;
-      margin-bottom: 0.5rem;
+      margin-bottom: 0.75rem;
       animation: fadeUp 0.6s 0.1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
       opacity: 0;
     }
     
-    .logo-text {
-      font-size: 2.75rem;
-      font-weight: 800;
-      letter-spacing: -0.03em;
-      background: linear-gradient(135deg, #fff 0%, #fff 40%, var(--accent-1) 60%, var(--accent-2) 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-      display: inline-block;
-    }
-    
-    .logo-dot {
-      display: inline-block;
-      width: 10px;
-      height: 10px;
-      background: linear-gradient(135deg, var(--accent-1), var(--accent-2));
-      border-radius: 50%;
-      margin-left: 2px;
-      vertical-align: middle;
-      position: relative;
-      top: -4px;
-      box-shadow: 0 0 20px var(--glow);
+    .logo svg {
+      height: 56px;
+      width: auto;
+      filter: drop-shadow(0 0 30px var(--glow));
     }
     
     /* Tagline */
@@ -415,12 +397,14 @@
     }
     
     .topbar-logo {
-      font-size: 1.125rem;
-      font-weight: 700;
-      letter-spacing: -0.02em;
-      background: linear-gradient(135deg, #fff, var(--accent-1));
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    
+    .topbar-logo svg {
+      height: 28px;
+      width: auto;
     }
     
     .topbar-btn {
@@ -748,7 +732,34 @@
     <div class="container">
       <div class="card">
         <div class="logo">
-          <span class="logo-text">needasite</span><span class="logo-dot"></span>
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 60" role="img" aria-label="needasite logo">
+            <defs>
+              <linearGradient id="iconGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#8B5CF6"/>
+                <stop offset="100%" stop-color="#06B6D4"/>
+              </linearGradient>
+              <linearGradient id="textGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stop-color="#FFFFFF"/>
+                <stop offset="60%" stop-color="#FFFFFF"/>
+                <stop offset="100%" stop-color="#8B5CF6"/>
+              </linearGradient>
+            </defs>
+            <g id="icon">
+              <path d="M4 12C4 7.58 7.58 4 12 4H36C40.42 4 44 7.58 44 12V44C44 48.42 40.42 52 36 52H12C7.58 52 4 48.42 4 44V12Z" fill="url(#iconGrad)"/>
+              <circle cx="12" cy="12" r="2.5" fill="rgba(255,255,255,0.9)"/>
+              <circle cx="19" cy="12" r="2.5" fill="rgba(255,255,255,0.6)"/>
+              <circle cx="26" cy="12" r="2.5" fill="rgba(255,255,255,0.4)"/>
+              <rect x="10" y="22" width="28" height="3" rx="1.5" fill="rgba(255,255,255,0.8)"/>
+              <rect x="10" y="29" width="20" height="3" rx="1.5" fill="rgba(255,255,255,0.5)"/>
+              <rect x="10" y="36" width="24" height="3" rx="1.5" fill="rgba(255,255,255,0.5)"/>
+              <path d="M38 42L40 38L42 42L40 46Z" fill="#FFFFFF"/>
+              <path d="M36 40L40 38L44 40L40 42Z" fill="#FFFFFF" opacity="0.7"/>
+            </g>
+            <g id="wordmark">
+              <text x="56" y="38" font-family="Outfit, -apple-system, sans-serif" font-size="28" font-weight="800" letter-spacing="-0.5" fill="url(#textGrad)">needasite</text>
+              <circle cx="227" cy="30" r="5" fill="url(#iconGrad)"/>
+            </g>
+          </svg>
         </div>
         <p class="tagline">Tell us what you want. We'll build it.</p>
         
@@ -788,7 +799,25 @@
   <!-- Editor -->
   <div id="editor" class="editor">
     <div class="topbar">
-      <div class="topbar-logo">needasite.</div>
+      <div class="topbar-logo">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 56 56" role="img" aria-label="needasite">
+          <defs>
+            <linearGradient id="tbGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#8B5CF6"/>
+              <stop offset="100%" stop-color="#06B6D4"/>
+            </linearGradient>
+          </defs>
+          <rect x="4" y="4" width="48" height="48" rx="12" fill="url(#tbGrad)"/>
+          <circle cx="14" cy="14" r="3" fill="rgba(255,255,255,0.9)"/>
+          <circle cx="23" cy="14" r="3" fill="rgba(255,255,255,0.6)"/>
+          <circle cx="32" cy="14" r="3" fill="rgba(255,255,255,0.4)"/>
+          <rect x="12" y="26" width="32" height="4" rx="2" fill="rgba(255,255,255,0.8)"/>
+          <rect x="12" y="34" width="22" height="4" rx="2" fill="rgba(255,255,255,0.5)"/>
+          <rect x="12" y="42" width="28" height="4" rx="2" fill="rgba(255,255,255,0.5)"/>
+          <path d="M44 44L46 40L48 44L46 48Z" fill="#FFFFFF"/>
+          <path d="M42 42L46 40L50 42L46 44Z" fill="#FFFFFF" opacity="0.7"/>
+        </svg>
+      </div>
       <button id="publishBtn" class="topbar-btn">
         <i data-lucide="upload"></i> Publish
       </button>

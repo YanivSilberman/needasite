@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 56 56" role="img" aria-labelledby="icon-title">
+  <title id="icon-title">needasite icon</title>
+  <defs>
+    <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#8B5CF6"/>
+      <stop offset="100%" stop-color="#06B6D4"/>
+    </linearGradient>
+  </defs>
+  
+  <!-- Main shape -->
+  <rect x="4" y="4" width="48" height="48" rx="12" fill="url(#grad)"/>
+  
+  <!-- Window dots -->
+  <circle cx="14" cy="14" r="3" fill="rgba(255,255,255,0.9)"/>
+  <circle cx="23" cy="14" r="3" fill="rgba(255,255,255,0.6)"/>
+  <circle cx="32" cy="14" r="3" fill="rgba(255,255,255,0.4)"/>
+  
+  <!-- Content lines -->
+  <rect x="12" y="26" width="32" height="4" rx="2" fill="rgba(255,255,255,0.8)"/>
+  <rect x="12" y="34" width="22" height="4" rx="2" fill="rgba(255,255,255,0.5)"/>
+  <rect x="12" y="42" width="28" height="4" rx="2" fill="rgba(255,255,255,0.5)"/>
+  
+  <!-- Sparkle -->
+  <path d="M44 44L46 40L48 44L46 48Z" fill="#FFFFFF"/>
+  <path d="M42 42L46 40L50 42L46 44Z" fill="#FFFFFF" opacity="0.7"/>
+</svg>

@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 60" role="img" aria-labelledby="logo-title">
+  <title id="logo-title">needasite logo</title>
+  <defs>
+    <linearGradient id="iconGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#8B5CF6"/>
+      <stop offset="100%" stop-color="#06B6D4"/>
+    </linearGradient>
+    <linearGradient id="textGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#FFFFFF"/>
+      <stop offset="60%" stop-color="#FFFFFF"/>
+      <stop offset="100%" stop-color="#8B5CF6"/>
+    </linearGradient>
+  </defs>
+  
+  <!-- Icon: Abstract site/window shape -->
+  <g id="icon">
+    <!-- Main shape - rounded square with corner cut -->
+    <path d="M4 12C4 7.58 7.58 4 12 4H36C40.42 4 44 7.58 44 12V44C44 48.42 40.42 52 36 52H12C7.58 52 4 48.42 4 44V12Z" fill="url(#iconGrad)"/>
+    
+    <!-- Window dots -->
+    <circle cx="12" cy="12" r="2.5" fill="rgba(255,255,255,0.9)"/>
+    <circle cx="19" cy="12" r="2.5" fill="rgba(255,255,255,0.6)"/>
+    <circle cx="26" cy="12" r="2.5" fill="rgba(255,255,255,0.4)"/>
+    
+    <!-- Content lines -->
+    <rect x="10" y="22" width="28" height="3" rx="1.5" fill="rgba(255,255,255,0.8)"/>
+    <rect x="10" y="29" width="20" height="3" rx="1.5" fill="rgba(255,255,255,0.5)"/>
+    <rect x="10" y="36" width="24" height="3" rx="1.5" fill="rgba(255,255,255,0.5)"/>
+    
+    <!-- Sparkle/magic element -->
+    <path d="M38 42L40 38L42 42L40 46Z" fill="#FFFFFF"/>
+    <path d="M36 40L40 38L44 40L40 42Z" fill="#FFFFFF" opacity="0.7"/>
+  </g>
+  
+  <!-- Wordmark -->
+  <g id="wordmark">
+    <text x="56" y="38" font-family="Outfit, -apple-system, sans-serif" font-size="28" font-weight="800" letter-spacing="-0.5" fill="url(#textGrad)">needasite</text>
+    <!-- Dot -->
+    <circle cx="227" cy="30" r="5" fill="url(#iconGrad)"/>
+  </g>
+</svg>
