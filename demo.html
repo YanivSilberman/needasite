@@ -22,7 +22,6 @@
           <p class="text-gray-500 mt-1">Describe it. We'll build it.</p>
         </div>
 
-        <!-- Initial prompt form -->
         <form id="buildForm" class="space-y-4">
           <textarea
             id="initialPrompt"
@@ -36,39 +35,27 @@
           </button>
         </form>
 
-        <!-- Follow-up questions -->
         <div id="followUpSection" class="hidden space-y-4">
           <div id="followUpQuestion" class="p-4 bg-purple-50 rounded-xl text-gray-700"></div>
-          <textarea
-            id="followUpAnswer"
-            rows="3"
-            placeholder="Your answer..."
-            class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none"
-          ></textarea>
+          <textarea id="followUpAnswer" rows="3" placeholder="Your answer..."
+            class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none"></textarea>
           <div class="flex gap-2">
-            <button id="skipFollowUp" class="flex-1 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium rounded-xl transition">
-              Skip
-            </button>
-            <button id="submitFollowUp" class="flex-1 py-3 bg-purple-600 hover:bg-purple-700 text-white font-semibold rounded-xl transition">
-              Build Site
-            </button>
+            <button id="skipFollowUp" class="flex-1 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium rounded-xl transition">Skip</button>
+            <button id="submitFollowUp" class="flex-1 py-3 bg-purple-600 hover:bg-purple-700 text-white font-semibold rounded-xl transition">Build Site</button>
           </div>
         </div>
 
-        <!-- Loading -->
         <div id="buildLoading" class="hidden flex-col items-center py-8">
           <div class="w-12 h-12 border-4 border-purple-200 border-t-purple-600 rounded-full animate-spin mb-4"></div>
           <p id="loadingText" class="text-gray-600">Building your site...</p>
-          <p class="text-gray-400 text-sm mt-1">~30 seconds</p>
         </div>
 
-        <!-- Error -->
         <div id="buildError" class="hidden mt-6 p-4 bg-red-50 rounded-xl text-red-700">
           <span id="buildErrorMsg"></span>
           <button onclick="resetBuild()" class="mt-2 text-sm underline">Try again</button>
         </div>
       </div>
-      <p class="text-center text-white/60 text-sm mt-6">Powered by Gemini + Imagen</p>
+      <p class="text-center text-white/60 text-sm mt-6">Powered by AI</p>
     </div>
   </div>
 
@@ -82,23 +69,20 @@
         <button id="downloadSite" class="px-3 py-1.5 text-sm bg-gray-100 text-gray-700 rounded-lg font-medium hover:bg-gray-200">
           ⬇ Download
         </button>
+        <button id="publishBtn" class="px-3 py-1.5 text-sm bg-purple-600 text-white rounded-lg font-medium hover:bg-purple-700">
+          🚀 Publish
+        </button>
       </div>
     </div>
 
-    <!-- Main Content - Tab based on mobile -->
-    <div class="flex-1 flex flex-col lg:flex-row overflow-hidden">
-      
-      <!-- Mobile Tab Bar -->
-      <div class="lg:hidden flex border-b bg-white">
-        <button id="tabChat" class="flex-1 py-3 text-center font-medium text-purple-600 border-b-2 border-purple-600">
-          💬 Chat
-        </button>
-        <button id="tabPreview" class="flex-1 py-3 text-center font-medium text-gray-500 border-b-2 border-transparent">
-          👁 Preview
-        </button>
-      </div>
+    <!-- Mobile Tab Bar -->
+    <div class="lg:hidden flex border-b bg-white">
+      <button id="tabChat" class="flex-1 py-3 text-center font-medium text-purple-600 border-b-2 border-purple-600">💬 Chat</button>
+      <button id="tabPreview" class="flex-1 py-3 text-center font-medium text-gray-500 border-b-2 border-transparent">👁 Preview</button>
+    </div>
 
-      <!-- Chat Panel -->
+    <!-- Main Content -->
+    <div class="flex-1 flex flex-col lg:flex-row overflow-hidden">
       <div id="chatPanel" class="flex-1 flex flex-col bg-gray-50 lg:max-w-md lg:border-r">
         <div id="messages" class="flex-1 overflow-y-auto p-4 space-y-4"></div>
         <div class="p-4 bg-white border-t">
@@ -110,9 +94,32 @@
         </div>
       </div>
 
-      <!-- Preview Panel -->
       <div id="previewPanel" class="hidden lg:flex flex-1 flex-col bg-white">
         <iframe id="previewFrame" class="flex-1 border-0"></iframe>
+      </div>
+    </div>
+  </div>
+
+  <!-- Publish Modal -->
+  <div id="publishModal" class="hidden fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-2xl p-6 w-full max-w-md">
+      <h2 class="text-xl font-bold text-gray-900 mb-2">Publish Your Site</h2>
+      <p class="text-gray-500 mb-4">Enter your email to get your live site URL.</p>
+      
+      <form id="publishForm" class="space-y-4">
+        <input type="email" id="publishEmail" placeholder="you@example.com" required
+          class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+        <div class="flex gap-2">
+          <button type="button" id="cancelPublish" class="flex-1 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium rounded-xl transition">Cancel</button>
+          <button type="submit" class="flex-1 py-3 bg-purple-600 hover:bg-purple-700 text-white font-semibold rounded-xl transition">Publish</button>
+        </div>
+      </form>
+      
+      <div id="publishSuccess" class="hidden text-center py-4">
+        <div class="text-4xl mb-2">🎉</div>
+        <p class="font-semibold text-gray-900 mb-2">Your site is live!</p>
+        <a id="publishedUrl" href="#" target="_blank" class="text-purple-600 hover:text-purple-700 break-all"></a>
+        <button onclick="closePublishModal()" class="mt-4 w-full py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl">Done</button>
       </div>
     </div>
   </div>
@@ -120,6 +127,9 @@
   <script>
     const GEMINI_KEY = 'AIzaSyCt6kF7rVw--3CzfmmAuyTVYYzaNwrrKWY';
     const GEMINI_API = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent';
+    
+    // Feature flag - set to true to enable AI image generation
+    const USE_AI_IMAGES = false;
     const IMAGEN_API = 'https://generativelanguage.googleapis.com/v1beta/models/imagen-4.0-fast-generate-001:predict';
     
     let currentHtml = '';
@@ -127,12 +137,12 @@
     let followUpContext = '';
     let isDesktop = window.innerWidth >= 1024;
 
+    // Elements
     const buildScreen = document.getElementById('buildScreen');
     const editorScreen = document.getElementById('editorScreen');
     const buildForm = document.getElementById('buildForm');
     const followUpSection = document.getElementById('followUpSection');
     const buildLoading = document.getElementById('buildLoading');
-    const buildError = document.getElementById('buildError');
     const loadingText = document.getElementById('loadingText');
     const chatForm = document.getElementById('chatForm');
     const chatInput = document.getElementById('chatInput');
@@ -140,11 +150,10 @@
     const previewFrame = document.getElementById('previewFrame');
     const previewPanel = document.getElementById('previewPanel');
     const chatPanel = document.getElementById('chatPanel');
-
-    // Tab switching for mobile
     const tabChat = document.getElementById('tabChat');
     const tabPreview = document.getElementById('tabPreview');
 
+    // Tab switching
     tabChat?.addEventListener('click', () => {
       tabChat.classList.add('text-purple-600', 'border-purple-600');
       tabChat.classList.remove('text-gray-500', 'border-transparent');
@@ -164,13 +173,12 @@
       chatPanel.classList.add('hidden');
     });
 
-    // Step 1: Get initial prompt and ask follow-up
+    // Initial form submit
     buildForm.addEventListener('submit', async (e) => {
       e.preventDefault();
       userPrompt = document.getElementById('initialPrompt').value.trim();
-      
       if (userPrompt.length < 10) {
-        alert('Please provide a more detailed description (at least 10 characters)');
+        alert('Please provide a more detailed description');
         return;
       }
       
@@ -184,7 +192,7 @@
         try {
           question = await getFollowUpQuestion(userPrompt);
         } catch (e) {
-          console.log('Follow-up question failed, proceeding to build:', e);
+          console.log('Follow-up skipped:', e);
         }
         
         buildLoading.classList.add('hidden');
@@ -200,23 +208,7 @@
       }
     });
 
-    // Get follow-up question from Gemini
-    async function getFollowUpQuestion(prompt) {
-      const sysPrompt = `A user wants to build a website. They said: "${prompt}"
-
-If you need ONE important clarification to build a better site, ask it now. 
-Focus on: color preferences, specific content, style preferences, or key features.
-
-If the request is already clear enough, respond with just: READY
-
-Otherwise respond with just the question (no intro, no "I'd like to ask", just the question).`;
-
-      const text = await callGemini(sysPrompt);
-      if (text.includes('READY') || text.length < 10) return null;
-      return text;
-    }
-
-    // Handle follow-up answer
+    // Follow-up handlers
     document.getElementById('submitFollowUp').addEventListener('click', async () => {
       followUpContext = document.getElementById('followUpAnswer').value;
       followUpSection.classList.add('hidden');
@@ -228,190 +220,68 @@ Otherwise respond with just the question (no intro, no "I'd like to ask", just t
       await buildSite();
     });
 
+    // Get follow-up question
+    async function getFollowUpQuestion(prompt) {
+      const sysPrompt = `A user wants to build a website: "${prompt}"
+
+Ask ONE short clarifying question about color scheme, style, or key features.
+If clear enough, respond: READY`;
+
+      const text = await callGemini(sysPrompt);
+      if (text.includes('READY') || text.length < 10) return null;
+      return text;
+    }
+
     // Build the site
     async function buildSite() {
       buildLoading.classList.remove('hidden');
       buildLoading.classList.add('flex');
+      loadingText.textContent = 'Building your site...';
       
-      // Ensure prompts are clean strings
-      const safeUserPrompt = String(userPrompt || '').slice(0, 2000);
-      const safeFollowUp = String(followUpContext || '').slice(0, 2000);
-      
-      const fullPrompt = safeFollowUp 
-        ? `${safeUserPrompt}\n\nAdditional details: ${safeFollowUp}`
-        : safeUserPrompt;
-        
-      console.log('=== BUILD SITE ===');
-      console.log('userPrompt length:', safeUserPrompt.length);
-      console.log('followUpContext length:', safeFollowUp.length);
-      console.log('fullPrompt length:', fullPrompt.length);
+      const fullPrompt = followUpContext 
+        ? `${userPrompt}\n\nAdditional details: ${followUpContext}`
+        : userPrompt;
       
       try {
-        // Step 1: Generate image descriptions
-        loadingText.textContent = 'Planning images...';
-        const imageDescs = await getImageDescriptions(fullPrompt);
-        
-        // Step 2: Generate images
-        loadingText.textContent = `Generating ${imageDescs.length} images...`;
-        const imageUrls = await generateImages(imageDescs);
-        
-        // Step 3: Generate HTML
-        loadingText.textContent = 'Building your site...';
-        currentHtml = await generateSite(fullPrompt, imageUrls);
+        currentHtml = await generateSite(fullPrompt);
         
         showEditor();
         addMessage('user', userPrompt);
-        if (followUpContext) {
-          addMessage('user', followUpContext);
-        }
-        addMessage('assistant', `✨ Your site is ready with ${imageUrls.length} custom AI-generated images! Switch to Preview tab to see it, or ask me to make changes.`);
+        if (followUpContext) addMessage('user', followUpContext);
+        addMessage('assistant', '✨ Your site is ready! Switch to Preview to see it, or ask me to make changes.');
         updatePreview();
       } catch (err) {
         showBuildError(err.message);
       }
     }
 
-    function showBuildError(msg) {
-      buildLoading.classList.add('hidden');
-      buildError.classList.remove('hidden');
-      document.getElementById('buildErrorMsg').textContent = msg;
-    }
-
-    // Get image descriptions
-    async function getImageDescriptions(sitePrompt) {
-      const prompt = `For a website described as: "${sitePrompt}"
-
-List 2-3 images needed. For each, provide a detailed image generation prompt.
-Focus on: hero/banner image, and 1-2 supporting images.
-
-Return ONLY a JSON array of strings. Example:
-["A stunning mountain landscape at sunset", "Professional headshot with neutral background"]
-
-Be specific about style, lighting, composition. No text in images.`;
-
-      const text = await callGemini(prompt);
-      const match = text.match(/\[[\s\S]*\]/);
-      return match ? JSON.parse(match[0]).slice(0, 3) : ['Abstract modern background'];
-    }
-
-    // Generate images
-    async function generateImages(descriptions) {
-      const results = [];
-      
-      // Limit descriptions to reasonable length
-      const safeDescriptions = descriptions.map(d => 
-        typeof d === 'string' ? d.slice(0, 500) : 'Abstract background'
-      );
-      
-      for (let i = 0; i < safeDescriptions.length; i++) {
-        loadingText.textContent = `Generating image ${i + 1}/${safeDescriptions.length}...`;
-        try {
-          const imagePrompt = safeDescriptions[i] + '. High quality, professional photography.';
-          console.log(`Image ${i + 1} prompt (${imagePrompt.length} chars):`, imagePrompt.slice(0, 100));
-          
-          const res = await fetch(`${IMAGEN_API}?key=${GEMINI_KEY}`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              instances: [{ prompt: imagePrompt }],
-              parameters: { sampleCount: 1 }
-            })
-          });
-
-          const data = await res.json();
-          if (data.error) {
-            console.error('Imagen error:', data.error);
-            continue;
-          }
-          if (data.predictions?.[0]?.bytesBase64Encoded) {
-            results.push({
-              description: safeDescriptions[i],
-              dataUrl: 'data:image/png;base64,' + data.predictions[0].bytesBase64Encoded
-            });
-          }
-        } catch (err) {
-          console.error('Image failed:', err);
-        }
-      }
-      
-      if (results.length === 0) {
-        results.push({ description: 'Hero', dataUrl: 'https://picsum.photos/1200/600' });
-      }
-      
-      return results;
-    }
-
-    // Generate site HTML
-    async function generateSite(prompt, images) {
-      console.log('generateSite called');
-      console.log('Prompt length:', prompt.length);
-      console.log('Images count:', images.length);
-      
-      // Create placeholder references - ONLY use descriptions, never data URLs!
-      const imagePlaceholders = images.map((img, i) => {
-        const desc = (img.description || 'Image').slice(0, 200);
-        console.log(`Image ${i+1} desc:`, desc.slice(0, 50));
-        return `{{IMAGE_${i + 1}}} - ${desc}`;
-      }).join('\n');
-      
-      console.log('Image placeholders total length:', imagePlaceholders.length);
-      
+    // Generate site HTML (using stock images)
+    async function generateSite(prompt) {
       const sysPrompt = `You are a professional web developer. Generate a COMPLETE, beautiful HTML5 website.
 
 REQUIREMENTS:
 - Valid HTML5 with <!DOCTYPE html>
 - Tailwind CSS via CDN: <script src="https://cdn.tailwindcss.com"><\/script>
-- Inter font from Google Fonts  
+- Inter font from Google Fonts
 - Mobile-first, fully responsive
 - Modern, clean design
+- Use placeholder images from https://picsum.photos/ (e.g., https://picsum.photos/800/600)
 - Proper SEO meta tags
-
-IMAGES: Use these placeholders in img src attributes (they will be replaced with real images):
-${imagePlaceholders}
-
-Example: <img src="{{IMAGE_1}}" alt="...">
-
-Use {{IMAGE_1}} as hero. Use others for about/features sections.
+- Current year: ${new Date().getFullYear()}
 
 USER REQUEST: ${prompt}
 
-Current year: ${new Date().getFullYear()}
+OUTPUT: Complete HTML only, no markdown or explanations.`;
 
-OUTPUT: Complete HTML only, no markdown.`;
-
-      let html = await callGemini(sysPrompt);
-      
-      // Replace placeholders with actual data URLs
-      images.forEach((img, i) => {
-        html = html.replace(new RegExp(`\\{\\{IMAGE_${i + 1}\\}\\}`, 'g'), img.dataUrl);
-      });
-      
-      return html;
+      return await callGemini(sysPrompt);
     }
 
-    // Store images separately for editing
-    let storedImages = [];
-    
     // Edit site
     async function editSite(instruction, html) {
-      console.log('editSite called, HTML length:', html.length);
-      
-      // Replace data URLs with placeholders to reduce token count
-      let htmlWithPlaceholders = html;
-      const dataUrlPattern = /data:image\/[^;]+;base64,[A-Za-z0-9+/=]+/g;
-      const dataUrls = html.match(dataUrlPattern) || [];
-      console.log('Found', dataUrls.length, 'data URLs to replace');
-      
-      dataUrls.forEach((url, i) => {
-        htmlWithPlaceholders = htmlWithPlaceholders.replace(url, `{{EXISTING_IMAGE_${i + 1}}}`);
-      });
-      
       const sysPrompt = `Edit this website per user request.
 
 CURRENT HTML:
-${htmlWithPlaceholders}
-
-Note: {{EXISTING_IMAGE_X}} are placeholders for existing images - keep them as-is unless asked to change.
+${html}
 
 USER REQUEST: ${instruction}
 
@@ -419,57 +289,29 @@ Current year: ${new Date().getFullYear()}.
 
 OUTPUT: Complete updated HTML only, no markdown.`;
 
-      let newHtml = await callGemini(sysPrompt);
-      
-      // Restore data URLs
-      dataUrls.forEach((url, i) => {
-        newHtml = newHtml.replace(new RegExp(`\\{\\{EXISTING_IMAGE_${i + 1}\\}\\}`, 'g'), url);
-      });
-      
-      return newHtml;
+      return await callGemini(sysPrompt);
     }
 
+    // Gemini API call
     async function callGemini(prompt) {
-      // Safety check - prompts should never be huge
-      console.log('=== GEMINI CALL ===');
-      console.log('Prompt length:', prompt.length, 'chars');
-      console.log('Prompt preview:', prompt.slice(0, 300));
-      
-      if (prompt.length > 50000) {
-        console.error('PROMPT TOO LARGE:', prompt.length, 'chars');
-        throw new Error(`Prompt too large (${prompt.length} chars). This is a bug.`);
-      }
-      
-      const body = {
-        contents: [{ parts: [{ text: prompt }] }],
-        generationConfig: { temperature: 0.7, maxOutputTokens: 8192 }
-      };
-      const bodyStr = JSON.stringify(body);
-      console.log('Request body length:', bodyStr.length, 'chars');
-      
-      if (bodyStr.length > 100000) {
-        console.error('BODY TOO LARGE:', bodyStr.length);
-        throw new Error(`Request body too large (${bodyStr.length} chars)`);
-      }
-      
       const res = await fetch(`${GEMINI_API}?key=${GEMINI_KEY}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: bodyStr
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: prompt }] }],
+          generationConfig: { temperature: 0.7, maxOutputTokens: 8192 }
+        })
       });
 
       if (!res.ok) {
         const errData = await res.json().catch(() => ({}));
-        const errMsg = errData.error?.message || `API error: ${res.status}`;
-        console.error('Gemini error:', errData);
-        throw new Error(errMsg);
+        throw new Error(errData.error?.message || `API error: ${res.status}`);
       }
+      
       const data = await res.json();
       let text = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
-      
       const match = text.match(/```(?:html)?\s*([\s\S]*?)```/);
       if (match) text = match[1];
-      
       return text.trim();
     }
 
@@ -492,11 +334,24 @@ OUTPUT: Complete updated HTML only, no markdown.`;
       }
     });
 
+    // UI helpers
+    function showBuildError(msg) {
+      buildLoading.classList.add('hidden');
+      document.getElementById('buildError').classList.remove('hidden');
+      document.getElementById('buildErrorMsg').textContent = msg;
+    }
+
+    function resetBuild() {
+      buildForm.classList.remove('hidden');
+      buildLoading.classList.add('hidden');
+      document.getElementById('buildError').classList.add('hidden');
+      followUpSection.classList.add('hidden');
+    }
+
     function showEditor() {
       buildScreen.classList.add('hidden');
       editorScreen.classList.remove('hidden');
       editorScreen.classList.add('flex');
-      
       if (isDesktop) {
         previewPanel.classList.remove('hidden');
         previewPanel.classList.add('flex');
@@ -525,6 +380,7 @@ OUTPUT: Complete updated HTML only, no markdown.`;
       previewFrame.srcdoc = currentHtml;
     }
 
+    // Download
     document.getElementById('downloadSite').addEventListener('click', () => {
       const blob = new Blob([currentHtml], { type: 'text/html' });
       const a = document.createElement('a');
@@ -533,16 +389,66 @@ OUTPUT: Complete updated HTML only, no markdown.`;
       a.click();
     });
 
-    function resetBuild() {
-      buildForm.classList.remove('hidden');
-      buildLoading.classList.add('hidden');
-      buildError.classList.add('hidden');
-      followUpSection.classList.add('hidden');
+    // Publish modal
+    document.getElementById('publishBtn').addEventListener('click', () => {
+      document.getElementById('publishModal').classList.remove('hidden');
+      document.getElementById('publishForm').classList.remove('hidden');
+      document.getElementById('publishSuccess').classList.add('hidden');
+    });
+
+    document.getElementById('cancelPublish').addEventListener('click', closePublishModal);
+
+    document.getElementById('publishForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const email = document.getElementById('publishEmail').value;
+      
+      // TODO: Actually publish the site and save email
+      // For now, simulate success
+      const siteId = Math.random().toString(36).substring(2, 10);
+      const url = `https://${siteId}.needasite.com`;
+      
+      document.getElementById('publishForm').classList.add('hidden');
+      document.getElementById('publishSuccess').classList.remove('hidden');
+      document.getElementById('publishedUrl').href = url;
+      document.getElementById('publishedUrl').textContent = url;
+      
+      console.log('Publish requested:', { email, siteId, htmlLength: currentHtml.length });
+    });
+
+    function closePublishModal() {
+      document.getElementById('publishModal').classList.add('hidden');
     }
 
+    // Resize handler
     window.addEventListener('resize', () => {
       isDesktop = window.innerWidth >= 1024;
     });
+
+    // === AI IMAGE GENERATION (disabled for now) ===
+    async function generateImagesAI(descriptions) {
+      if (!USE_AI_IMAGES) return [];
+      
+      const results = [];
+      for (const desc of descriptions.slice(0, 3)) {
+        try {
+          const res = await fetch(`${IMAGEN_API}?key=${GEMINI_KEY}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              instances: [{ prompt: desc + '. High quality photography.' }],
+              parameters: { sampleCount: 1 }
+            })
+          });
+          const data = await res.json();
+          if (data.predictions?.[0]?.bytesBase64Encoded) {
+            results.push('data:image/png;base64,' + data.predictions[0].bytesBase64Encoded);
+          }
+        } catch (err) {
+          console.error('Image gen failed:', err);
+        }
+      }
+      return results;
+    }
   </script>
 </body>
 </html>
