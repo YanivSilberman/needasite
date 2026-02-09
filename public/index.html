@@ -3,182 +3,856 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>needasite - Build & Edit</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          colors: {
-            // Brand purples (warm)
-            purple: {
-              50: '#F5F3FF',
-              100: '#EDE9FE',
-              500: '#8B5CF6',
-              600: '#7C3AED',
-              700: '#6D28D9',
-            },
-            // Warm grays (stone)
-            gray: {
-              50: '#FAFAF9',
-              100: '#F5F5F4',
-              200: '#E7E5E4',
-              500: '#78716C',
-              600: '#57534E',
-              700: '#44403C',
-              900: '#1C1917',
-            },
-            success: '#16A34A',
-          },
-          fontFamily: {
-            sans: ['Inter', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'sans-serif'],
-          },
-          fontSize: {
-            base: ['1.125rem', { lineHeight: '1.6' }], // 18px base
-            lg: ['1.25rem', { lineHeight: '1.6' }],
-            xl: ['1.5rem', { lineHeight: '1.4' }],
-            '2xl': ['1.875rem', { lineHeight: '1.3' }],
-            '3xl': ['2.25rem', { lineHeight: '1.2' }],
-          },
-        }
+  <title>needasite — Tell us what you want. We'll build it.</title>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    :root {
+      --cream: #FFFBF5;
+      --cream-dark: #F5EDE3;
+      --brown: #2D2A26;
+      --brown-light: #5C564E;
+      --coral: #E8846B;
+      --coral-dark: #D6705A;
+      --coral-light: #FFEEE9;
+      --sage: #7CAE7A;
+      --sage-light: #E8F5E8;
+    }
+    
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: 'DM Sans', -apple-system, sans-serif;
+      background: var(--cream);
+      color: var(--brown);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+    
+    /* Subtle grain texture */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+      opacity: 0.03;
+      pointer-events: none;
+      z-index: 1000;
+    }
+    
+    /* Floating organic shapes */
+    .shape {
+      position: absolute;
+      border-radius: 50%;
+      opacity: 0.5;
+      filter: blur(60px);
+      z-index: 0;
+    }
+    .shape-1 {
+      width: 400px;
+      height: 400px;
+      background: var(--coral-light);
+      top: -100px;
+      right: -100px;
+      animation: float1 20s ease-in-out infinite;
+    }
+    .shape-2 {
+      width: 300px;
+      height: 300px;
+      background: var(--sage-light);
+      bottom: -50px;
+      left: -50px;
+      animation: float2 25s ease-in-out infinite;
+    }
+    .shape-3 {
+      width: 200px;
+      height: 200px;
+      background: var(--cream-dark);
+      top: 40%;
+      left: 10%;
+      animation: float3 18s ease-in-out infinite;
+    }
+    
+    @keyframes float1 {
+      0%, 100% { transform: translate(0, 0) scale(1); }
+      50% { transform: translate(-30px, 30px) scale(1.1); }
+    }
+    @keyframes float2 {
+      0%, 100% { transform: translate(0, 0) scale(1); }
+      50% { transform: translate(40px, -20px) scale(1.05); }
+    }
+    @keyframes float3 {
+      0%, 100% { transform: translate(0, 0); }
+      50% { transform: translate(20px, 40px); }
+    }
+    
+    /* Main container */
+    .container {
+      position: relative;
+      z-index: 1;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem;
+    }
+    
+    /* Card */
+    .card {
+      background: white;
+      border-radius: 24px;
+      padding: 3rem 2.5rem;
+      max-width: 480px;
+      width: 100%;
+      box-shadow: 
+        0 4px 6px -1px rgba(45, 42, 38, 0.05),
+        0 20px 40px -8px rgba(45, 42, 38, 0.1);
+      animation: cardEntrance 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      opacity: 0;
+      transform: translateY(30px);
+    }
+    
+    @keyframes cardEntrance {
+      to {
+        opacity: 1;
+        transform: translateY(0);
       }
     }
-  </script>
-  <script src="https://unpkg.com/lucide@latest"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@700&display=swap" rel="stylesheet">
-  <style>
-    * { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
-    .gradient-bg { background: linear-gradient(135deg, #7C3AED 0%, #6D28D9 100%); }
-    .logo { font-family: 'Space Grotesk', sans-serif; letter-spacing: -0.03em; }
-    .logo-dot { 
-      display: inline-block;
-      width: 0.35em;
-      height: 0.35em;
-      background: currentColor;
-      border-radius: 50%;
-      margin-left: 0.05em;
-      vertical-align: baseline;
-      position: relative;
-      top: -0.1em;
+    
+    /* Logo */
+    .logo {
+      font-family: 'Fraunces', Georgia, serif;
+      font-weight: 700;
+      font-size: 2.5rem;
+      color: var(--brown);
+      text-align: center;
+      margin-bottom: 0.5rem;
+      letter-spacing: -0.02em;
+      animation: fadeUp 0.6s 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      opacity: 0;
+      transform: translateY(15px);
     }
-    /* Ensure minimum touch targets */
-    button, a, input, textarea { min-height: 48px; }
-    /* Better focus states */
-    :focus-visible { outline: 2px solid #7C3AED; outline-offset: 2px; }
-    input:focus, textarea:focus { outline: none; }
+    
+    .logo .dot {
+      color: var(--coral);
+    }
+    
+    /* Tagline */
+    .tagline {
+      text-align: center;
+      color: var(--brown-light);
+      font-size: 1.125rem;
+      margin-bottom: 2.5rem;
+      animation: fadeUp 0.6s 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      opacity: 0;
+      transform: translateY(15px);
+    }
+    
+    @keyframes fadeUp {
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    
+    /* Form */
+    .form {
+      animation: fadeUp 0.6s 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      opacity: 0;
+      transform: translateY(15px);
+    }
+    
+    .input-wrapper {
+      position: relative;
+      margin-bottom: 1.5rem;
+    }
+    
+    .input-wrapper textarea {
+      width: 100%;
+      min-height: 140px;
+      padding: 1.25rem;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 1.125rem;
+      line-height: 1.6;
+      color: var(--brown);
+      background: var(--cream);
+      border: 2px solid transparent;
+      border-radius: 16px;
+      resize: none;
+      transition: all 0.3s ease;
+    }
+    
+    .input-wrapper textarea::placeholder {
+      color: var(--brown-light);
+      opacity: 0.6;
+    }
+    
+    .input-wrapper textarea:focus {
+      outline: none;
+      background: white;
+      border-color: var(--coral);
+      box-shadow: 0 0 0 4px var(--coral-light);
+    }
+    
+    /* Button */
+    .btn {
+      width: 100%;
+      padding: 1.125rem 2rem;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 1.125rem;
+      font-weight: 600;
+      color: white;
+      background: var(--coral);
+      border: none;
+      border-radius: 14px;
+      cursor: pointer;
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .btn::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(180deg, rgba(255,255,255,0.15) 0%, transparent 50%);
+    }
+    
+    .btn:hover {
+      background: var(--coral-dark);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px -4px rgba(232, 132, 107, 0.4);
+    }
+    
+    .btn:active {
+      transform: translateY(0);
+    }
+    
+    /* Follow-up section */
+    .followup {
+      display: none;
+    }
+    
+    .followup.visible {
+      display: block;
+      animation: fadeUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+    
+    .question-bubble {
+      background: var(--sage-light);
+      padding: 1.25rem;
+      border-radius: 16px;
+      border-bottom-left-radius: 4px;
+      margin-bottom: 1rem;
+      font-size: 1.0625rem;
+      line-height: 1.5;
+    }
+    
+    .btn-row {
+      display: flex;
+      gap: 0.75rem;
+    }
+    
+    .btn-secondary {
+      flex: 1;
+      padding: 1rem;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 1rem;
+      font-weight: 500;
+      color: var(--brown);
+      background: var(--cream-dark);
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    
+    .btn-secondary:hover {
+      background: #EBE3D9;
+    }
+    
+    .btn-primary-sm {
+      flex: 1;
+      padding: 1rem;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 1rem;
+      font-weight: 600;
+      color: white;
+      background: var(--coral);
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    
+    .btn-primary-sm:hover {
+      background: var(--coral-dark);
+    }
+    
+    /* Loading state */
+    .loading {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      padding: 2rem 0;
+    }
+    
+    .loading.visible {
+      display: flex;
+      animation: fadeUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+    
+    .spinner {
+      width: 48px;
+      height: 48px;
+      border: 3px solid var(--cream-dark);
+      border-top-color: var(--coral);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin-bottom: 1rem;
+    }
+    
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    
+    .loading-text {
+      font-size: 1.0625rem;
+      color: var(--brown-light);
+    }
+    
+    /* Error state */
+    .error {
+      display: none;
+      background: #FEF2F2;
+      border-radius: 12px;
+      padding: 1.25rem;
+      margin-top: 1rem;
+    }
+    
+    .error.visible {
+      display: block;
+      animation: shake 0.5s ease;
+    }
+    
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      20%, 60% { transform: translateX(-4px); }
+      40%, 80% { transform: translateX(4px); }
+    }
+    
+    .error-title {
+      font-weight: 600;
+      color: #B91C1C;
+      margin-bottom: 0.25rem;
+    }
+    
+    .error-msg {
+      color: #DC2626;
+      font-size: 0.9375rem;
+    }
+    
+    .error-retry {
+      color: var(--coral);
+      font-weight: 500;
+      background: none;
+      border: none;
+      cursor: pointer;
+      margin-top: 0.5rem;
+      padding: 0;
+    }
+    
+    .error-retry:hover {
+      text-decoration: underline;
+    }
+    
+    /* Footer */
+    .footer {
+      margin-top: 2rem;
+      text-align: center;
+      color: var(--brown-light);
+      opacity: 0.6;
+      font-size: 0.875rem;
+      animation: fadeUp 0.6s 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      opacity: 0;
+    }
+    
+    /* Editor screen */
+    .editor-screen {
+      display: none;
+      min-height: 100vh;
+      flex-direction: column;
+    }
+    
+    .editor-screen.visible {
+      display: flex;
+    }
+    
+    .topbar {
+      background: white;
+      border-bottom: 1px solid var(--cream-dark);
+      padding: 0.875rem 1.25rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: relative;
+      z-index: 10;
+    }
+    
+    .topbar-logo {
+      font-family: 'Fraunces', Georgia, serif;
+      font-weight: 700;
+      font-size: 1.25rem;
+      color: var(--brown);
+    }
+    
+    .topbar-logo .dot {
+      color: var(--coral);
+    }
+    
+    .topbar-btn {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.625rem 1rem;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.9375rem;
+      font-weight: 600;
+      color: white;
+      background: var(--coral);
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    
+    .topbar-btn:hover {
+      background: var(--coral-dark);
+    }
+    
+    .topbar-btn svg {
+      width: 18px;
+      height: 18px;
+    }
+    
+    /* Tabs */
+    .tabs {
+      display: flex;
+      background: white;
+      border-bottom: 1px solid var(--cream-dark);
+    }
+    
+    @media (min-width: 1024px) {
+      .tabs { display: none; }
+    }
+    
+    .tab {
+      flex: 1;
+      padding: 1rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 1rem;
+      font-weight: 500;
+      color: var(--brown-light);
+      background: none;
+      border: none;
+      border-bottom: 2px solid transparent;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    
+    .tab.active {
+      color: var(--coral);
+      border-bottom-color: var(--coral);
+    }
+    
+    .tab svg {
+      width: 18px;
+      height: 18px;
+    }
+    
+    /* Editor layout */
+    .editor-main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    
+    @media (min-width: 1024px) {
+      .editor-main {
+        flex-direction: row;
+      }
+    }
+    
+    .chat-panel {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      background: var(--cream);
+      max-height: 100%;
+    }
+    
+    @media (min-width: 1024px) {
+      .chat-panel {
+        max-width: 420px;
+        border-right: 1px solid var(--cream-dark);
+      }
+    }
+    
+    .chat-panel.hidden {
+      display: none;
+    }
+    
+    @media (min-width: 1024px) {
+      .chat-panel.hidden {
+        display: flex;
+      }
+    }
+    
+    .messages {
+      flex: 1;
+      overflow-y: auto;
+      padding: 1.25rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+    
+    .message {
+      max-width: 85%;
+      padding: 0.875rem 1.125rem;
+      border-radius: 16px;
+      font-size: 1rem;
+      line-height: 1.5;
+      animation: messageIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    
+    @keyframes messageIn {
+      from {
+        opacity: 0;
+        transform: translateY(10px) scale(0.95);
+      }
+    }
+    
+    .message-user {
+      align-self: flex-end;
+      background: var(--coral);
+      color: white;
+      border-bottom-right-radius: 4px;
+    }
+    
+    .message-assistant {
+      align-self: flex-start;
+      background: white;
+      color: var(--brown);
+      border-bottom-left-radius: 4px;
+      box-shadow: 0 2px 8px rgba(45, 42, 38, 0.06);
+    }
+    
+    .chat-input-wrap {
+      padding: 1rem;
+      background: white;
+      border-top: 1px solid var(--cream-dark);
+    }
+    
+    .chat-form {
+      display: flex;
+      gap: 0.75rem;
+    }
+    
+    .chat-input {
+      flex: 1;
+      padding: 0.875rem 1rem;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 1rem;
+      color: var(--brown);
+      background: var(--cream);
+      border: 2px solid transparent;
+      border-radius: 12px;
+      transition: all 0.2s ease;
+    }
+    
+    .chat-input:focus {
+      outline: none;
+      background: white;
+      border-color: var(--coral);
+    }
+    
+    .chat-send {
+      padding: 0.875rem 1.25rem;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 1rem;
+      font-weight: 600;
+      color: white;
+      background: var(--coral);
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    
+    .chat-send:hover {
+      background: var(--coral-dark);
+    }
+    
+    .preview-panel {
+      flex: 1;
+      display: none;
+      background: white;
+    }
+    
+    .preview-panel.visible {
+      display: flex;
+    }
+    
+    @media (min-width: 1024px) {
+      .preview-panel {
+        display: flex;
+      }
+    }
+    
+    .preview-frame {
+      flex: 1;
+      border: none;
+    }
+    
+    /* Modal */
+    .modal-backdrop {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(45, 42, 38, 0.4);
+      backdrop-filter: blur(4px);
+      z-index: 100;
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem;
+    }
+    
+    .modal-backdrop.visible {
+      display: flex;
+      animation: fadeIn 0.2s ease;
+    }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; }
+    }
+    
+    .modal {
+      background: white;
+      border-radius: 20px;
+      padding: 2rem;
+      max-width: 420px;
+      width: 100%;
+      box-shadow: 0 25px 50px -12px rgba(45, 42, 38, 0.25);
+      animation: modalIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    
+    @keyframes modalIn {
+      from {
+        opacity: 0;
+        transform: scale(0.95) translateY(10px);
+      }
+    }
+    
+    .modal-title {
+      font-family: 'Fraunces', Georgia, serif;
+      font-weight: 600;
+      font-size: 1.5rem;
+      color: var(--brown);
+      margin-bottom: 0.5rem;
+    }
+    
+    .modal-desc {
+      color: var(--brown-light);
+      margin-bottom: 1.5rem;
+    }
+    
+    .modal-input {
+      width: 100%;
+      padding: 1rem;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 1rem;
+      color: var(--brown);
+      background: var(--cream);
+      border: 2px solid transparent;
+      border-radius: 12px;
+      margin-bottom: 1rem;
+      transition: all 0.2s ease;
+    }
+    
+    .modal-input:focus {
+      outline: none;
+      background: white;
+      border-color: var(--coral);
+    }
+    
+    .modal-success {
+      display: none;
+      text-align: center;
+      padding: 1rem 0;
+    }
+    
+    .modal-success.visible {
+      display: block;
+    }
+    
+    .modal-success-icon {
+      width: 64px;
+      height: 64px;
+      margin: 0 auto 1rem;
+      color: var(--sage);
+    }
+    
+    .modal-success-title {
+      font-family: 'Fraunces', Georgia, serif;
+      font-weight: 600;
+      font-size: 1.375rem;
+      color: var(--brown);
+      margin-bottom: 0.75rem;
+    }
+    
+    .modal-success-url {
+      color: var(--coral);
+      font-weight: 500;
+      word-break: break-all;
+    }
+    
+    .modal-done {
+      width: 100%;
+      margin-top: 1.5rem;
+      padding: 0.875rem;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 1rem;
+      font-weight: 500;
+      color: var(--brown);
+      background: var(--cream-dark);
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+    }
+    
+    .modal-done:hover {
+      background: #EBE3D9;
+    }
+    
+    /* Hide build screen when editor is shown */
+    .build-screen.hidden {
+      display: none;
+    }
   </style>
 </head>
-<body class="min-h-screen bg-gray-50 text-gray-700">
+<body>
+  <!-- Floating shapes -->
+  <div class="shape shape-1"></div>
+  <div class="shape shape-2"></div>
+  <div class="shape shape-3"></div>
   
-  <!-- Initial Build Screen -->
-  <div id="buildScreen" class="min-h-screen gradient-bg flex items-center justify-center p-4">
-    <div class="w-full max-w-lg">
-      <div class="bg-white rounded-2xl shadow-xl p-8 sm:p-10">
-        <div class="text-center mb-8">
-          <h1 class="text-4xl font-bold text-gray-900 logo">needasite<span class="logo-dot"></span></h1>
-          <p class="text-gray-500 mt-3 text-lg">Tell us what you want. We'll build it.</p>
-        </div>
-
-        <form id="buildForm" class="space-y-5">
-          <textarea
-            id="initialPrompt"
-            rows="4"
-            placeholder="A website for my bakery called Sweet Dreams..."
-            class="w-full px-4 py-4 text-lg border-2 border-gray-200 rounded-2xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 resize-none"
-            required
-          >A portfolio website for a photographer named Alex who specializes in landscape photography</textarea>
-          <button type="submit" class="w-full py-4 bg-purple-600 hover:bg-purple-700 text-white text-lg font-semibold rounded-xl transition shadow-sm">
-            Continue
-          </button>
+  <!-- Build Screen -->
+  <div id="buildScreen" class="build-screen">
+    <div class="container">
+      <div class="card">
+        <h1 class="logo">needasite<span class="dot">.</span></h1>
+        <p class="tagline">Tell us what you want. We'll build it.</p>
+        
+        <form id="buildForm" class="form">
+          <div class="input-wrapper">
+            <textarea id="initialPrompt" placeholder="A website for my bakery called Sweet Dreams..." required>A portfolio website for a photographer named Alex who specializes in landscape photography</textarea>
+          </div>
+          <button type="submit" class="btn">Continue</button>
         </form>
-
-        <div id="followUpSection" class="hidden space-y-5">
-          <div id="followUpQuestion" class="p-5 bg-purple-50 rounded-2xl text-gray-700 text-lg"></div>
-          <textarea id="followUpAnswer" rows="3" placeholder="Your answer..."
-            class="w-full px-4 py-4 text-lg border-2 border-gray-200 rounded-2xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 resize-none"></textarea>
-          <div class="flex gap-3">
-            <button id="skipFollowUp" class="flex-1 py-4 bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium rounded-xl transition">Skip</button>
-            <button id="submitFollowUp" class="flex-1 py-4 bg-purple-600 hover:bg-purple-700 text-white font-semibold rounded-xl transition shadow-sm">Build My Site</button>
+        
+        <div id="followUp" class="followup">
+          <div id="followUpQuestion" class="question-bubble"></div>
+          <div class="input-wrapper">
+            <textarea id="followUpAnswer" placeholder="Your answer..."></textarea>
+          </div>
+          <div class="btn-row">
+            <button id="skipBtn" class="btn-secondary">Skip</button>
+            <button id="buildBtn" class="btn-primary-sm">Build My Site</button>
           </div>
         </div>
-
-        <div id="buildLoading" class="hidden flex-col items-center py-10">
-          <div class="w-14 h-14 border-4 border-purple-200 border-t-purple-600 rounded-full animate-spin mb-5"></div>
-          <p id="loadingText" class="text-gray-600 text-lg">Building your site...</p>
+        
+        <div id="loading" class="loading">
+          <div class="spinner"></div>
+          <p id="loadingText" class="loading-text">Building your site...</p>
         </div>
-
-        <div id="buildError" class="hidden mt-6 p-5 bg-red-50 rounded-2xl text-red-700">
-          <p class="font-medium mb-1">Something went wrong</p>
-          <p id="buildErrorMsg" class="text-red-600"></p>
-          <button onclick="resetBuild()" class="mt-3 text-purple-600 font-medium hover:underline">Try again</button>
+        
+        <div id="error" class="error">
+          <p class="error-title">Something went wrong</p>
+          <p id="errorMsg" class="error-msg"></p>
+          <button onclick="resetBuild()" class="error-retry">Try again</button>
         </div>
       </div>
-      <p class="text-center text-white/70 mt-8">Powered by AI</p>
+      <p class="footer">Powered by AI</p>
     </div>
   </div>
-
+  
   <!-- Editor Screen -->
-  <div id="editorScreen" class="hidden min-h-screen flex flex-col">
+  <div id="editorScreen" class="editor-screen">
+    <div class="topbar">
+      <div class="topbar-logo">needasite<span class="dot">.</span></div>
+      <button id="publishBtn" class="topbar-btn">
+        <i data-lucide="upload"></i>
+        Publish
+      </button>
+    </div>
     
-    <!-- Top Bar -->
-    <div class="bg-white border-b border-gray-200 px-4 py-3 flex items-center justify-between">
-      <h1 class="text-xl font-bold text-gray-900 logo">needasite<span class="logo-dot"></span></h1>
-      <button id="publishBtn" class="flex items-center gap-2 px-5 py-2.5 bg-purple-600 text-white rounded-xl font-medium hover:bg-purple-700 shadow-sm transition">
-        <i data-lucide="upload" class="w-5 h-5"></i> Publish
+    <div class="tabs">
+      <button id="tabChat" class="tab active">
+        <i data-lucide="message-circle"></i>
+        Chat
+      </button>
+      <button id="tabPreview" class="tab">
+        <i data-lucide="eye"></i>
+        Preview
       </button>
     </div>
-
-    <!-- Mobile Tab Bar -->
-    <div class="lg:hidden flex border-b border-gray-200 bg-white">
-      <button id="tabChat" class="flex-1 py-4 flex items-center justify-center gap-2 text-lg font-medium text-purple-600 border-b-2 border-purple-600">
-        <i data-lucide="message-circle" class="w-5 h-5"></i> Chat
-      </button>
-      <button id="tabPreview" class="flex-1 py-4 flex items-center justify-center gap-2 text-lg font-medium text-gray-500 border-b-2 border-transparent">
-        <i data-lucide="eye" class="w-5 h-5"></i> Preview
-      </button>
-    </div>
-
-    <!-- Main Content -->
-    <div class="flex-1 flex flex-col lg:flex-row overflow-hidden">
-      <div id="chatPanel" class="flex-1 flex flex-col bg-gray-50 lg:max-w-md lg:border-r">
-        <div id="messages" class="flex-1 overflow-y-auto p-4 space-y-4"></div>
-        <div class="p-4 bg-white border-t border-gray-200">
-          <form id="chatForm" class="flex gap-3">
-            <input type="text" id="chatInput" placeholder="Change the colors..."
-              class="flex-1 px-4 py-3 text-lg border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500">
-            <button type="submit" class="px-5 py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-xl font-medium shadow-sm transition">Send</button>
+    
+    <div class="editor-main">
+      <div id="chatPanel" class="chat-panel">
+        <div id="messages" class="messages"></div>
+        <div class="chat-input-wrap">
+          <form id="chatForm" class="chat-form">
+            <input type="text" id="chatInput" class="chat-input" placeholder="Change the colors...">
+            <button type="submit" class="chat-send">Send</button>
           </form>
         </div>
       </div>
-
-      <div id="previewPanel" class="hidden lg:flex flex-1 flex-col bg-white">
-        <iframe id="previewFrame" class="flex-1 border-0"></iframe>
+      <div id="previewPanel" class="preview-panel">
+        <iframe id="previewFrame" class="preview-frame"></iframe>
       </div>
     </div>
   </div>
-
+  
   <!-- Publish Modal -->
-  <div id="publishModal" class="hidden fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4">
-    <div class="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-md">
-      <h2 class="text-2xl font-bold text-gray-900 mb-2">Put Your Site Online</h2>
-      <p class="text-gray-500 text-lg mb-6">Enter your email. We'll send you the link.</p>
-      
-      <form id="publishForm" class="space-y-5">
-        <input type="email" id="publishEmail" placeholder="you@example.com" required
-          class="w-full px-4 py-4 text-lg border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500">
-        <div class="flex gap-3">
-          <button type="button" id="cancelPublish" class="flex-1 py-4 bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium rounded-xl transition">Cancel</button>
-          <button type="submit" class="flex-1 py-4 bg-purple-600 hover:bg-purple-700 text-white font-semibold rounded-xl transition shadow-sm">Publish</button>
-        </div>
-      </form>
-      
-      <div id="publishSuccess" class="hidden text-center py-6">
-        <div class="flex justify-center mb-4 text-success">
-          <i data-lucide="check-circle" class="w-16 h-16"></i>
-        </div>
-        <p class="text-xl font-semibold text-gray-900 mb-3">Your site is live!</p>
-        <a id="publishedUrl" href="#" target="_blank" class="text-lg text-purple-600 hover:text-purple-700 break-all font-medium"></a>
-        <button onclick="closePublishModal()" class="mt-6 w-full py-4 bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium rounded-xl transition">Done</button>
+  <div id="publishModal" class="modal-backdrop">
+    <div class="modal">
+      <div id="publishFormWrap">
+        <h2 class="modal-title">Put your site online</h2>
+        <p class="modal-desc">Enter your email and we'll send you the link.</p>
+        <form id="publishForm">
+          <input type="email" id="publishEmail" class="modal-input" placeholder="you@example.com" required>
+          <div class="btn-row">
+            <button type="button" id="cancelPublish" class="btn-secondary">Cancel</button>
+            <button type="submit" class="btn-primary-sm">Publish</button>
+          </div>
+        </form>
+      </div>
+      <div id="publishSuccess" class="modal-success">
+        <i data-lucide="check-circle" class="modal-success-icon"></i>
+        <p class="modal-success-title">Your site is live!</p>
+        <a id="publishedUrl" class="modal-success-url" href="#" target="_blank"></a>
+        <button onclick="closeModal()" class="modal-done">Done</button>
       </div>
     </div>
   </div>
@@ -187,208 +861,118 @@
     const GEMINI_KEY = 'AIzaSyCt6kF7rVw--3CzfmmAuyTVYYzaNwrrKWY';
     const GEMINI_API = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent';
     
-    // Feature flag - set to true to enable AI image generation
-    const USE_AI_IMAGES = false;
-    const IMAGEN_API = 'https://generativelanguage.googleapis.com/v1beta/models/imagen-4.0-fast-generate-001:predict';
-    
     let currentHtml = '';
     let userPrompt = '';
     let followUpContext = '';
-    let isDesktop = window.innerWidth >= 1024;
-
+    let publishedEmail = '';
+    
     // Elements
     const buildScreen = document.getElementById('buildScreen');
     const editorScreen = document.getElementById('editorScreen');
     const buildForm = document.getElementById('buildForm');
-    const followUpSection = document.getElementById('followUpSection');
-    const buildLoading = document.getElementById('buildLoading');
+    const followUp = document.getElementById('followUp');
+    const loading = document.getElementById('loading');
     const loadingText = document.getElementById('loadingText');
-    const chatForm = document.getElementById('chatForm');
-    const chatInput = document.getElementById('chatInput');
-    const messages = document.getElementById('messages');
-    const previewFrame = document.getElementById('previewFrame');
-    const previewPanel = document.getElementById('previewPanel');
-    const chatPanel = document.getElementById('chatPanel');
-    const tabChat = document.getElementById('tabChat');
-    const tabPreview = document.getElementById('tabPreview');
-
-    // Tab switching
-    tabChat?.addEventListener('click', () => {
-      tabChat.classList.add('text-purple-600', 'border-purple-600');
-      tabChat.classList.remove('text-gray-500', 'border-transparent');
-      tabPreview.classList.remove('text-purple-600', 'border-purple-600');
-      tabPreview.classList.add('text-gray-500', 'border-transparent');
-      chatPanel.classList.remove('hidden');
-      previewPanel.classList.add('hidden');
-    });
-
-    tabPreview?.addEventListener('click', () => {
-      tabPreview.classList.add('text-purple-600', 'border-purple-600');
-      tabPreview.classList.remove('text-gray-500', 'border-transparent');
-      tabChat.classList.remove('text-purple-600', 'border-purple-600');
-      tabChat.classList.add('text-gray-500', 'border-transparent');
-      previewPanel.classList.remove('hidden');
-      previewPanel.classList.add('flex');
-      chatPanel.classList.add('hidden');
-    });
-
-    // Initial form submit
+    const error = document.getElementById('error');
+    const errorMsg = document.getElementById('errorMsg');
+    
+    // Initialize Lucide
+    lucide.createIcons();
+    
+    // Build form submit
     buildForm.addEventListener('submit', async (e) => {
       e.preventDefault();
       userPrompt = document.getElementById('initialPrompt').value.trim();
-      if (userPrompt.length < 10) {
-        alert('Please provide a more detailed description');
-        return;
-      }
+      if (userPrompt.length < 10) return alert('Please add more detail');
       
-      buildForm.classList.add('hidden');
-      buildLoading.classList.remove('hidden');
-      buildLoading.classList.add('flex');
+      buildForm.style.display = 'none';
+      loading.classList.add('visible');
       loadingText.textContent = 'Thinking...';
       
       try {
-        let question = null;
-        try {
-          question = await getFollowUpQuestion(userPrompt);
-        } catch (e) {
-          console.log('Follow-up skipped:', e);
-        }
-        
-        buildLoading.classList.add('hidden');
+        const question = await getFollowUp(userPrompt);
+        loading.classList.remove('visible');
         
         if (question) {
           document.getElementById('followUpQuestion').textContent = question;
-          followUpSection.classList.remove('hidden');
+          followUp.classList.add('visible');
         } else {
           await buildSite();
         }
       } catch (err) {
-        showBuildError(err.message);
+        showError(err.message);
       }
     });
-
+    
     // Follow-up handlers
-    document.getElementById('submitFollowUp').addEventListener('click', async () => {
+    document.getElementById('buildBtn').addEventListener('click', async () => {
       followUpContext = document.getElementById('followUpAnswer').value;
-      followUpSection.classList.add('hidden');
+      followUp.classList.remove('visible');
       await buildSite();
     });
-
-    document.getElementById('skipFollowUp').addEventListener('click', async () => {
-      followUpSection.classList.add('hidden');
+    
+    document.getElementById('skipBtn').addEventListener('click', async () => {
+      followUp.classList.remove('visible');
       await buildSite();
     });
-
-    // Get follow-up question
-    async function getFollowUpQuestion(prompt) {
-      const sysPrompt = `A user wants to build a website: "${prompt}"
-
-Ask ONE short clarifying question about color scheme, style, or key features.
-If clear enough, respond: READY`;
-
-      const text = await callGemini(sysPrompt);
+    
+    async function getFollowUp(prompt) {
+      const text = await callGemini(`A user wants: "${prompt}"\n\nAsk ONE short question about style or features. If clear, respond: READY`);
       if (text.includes('READY') || text.length < 10) return null;
       return text;
     }
-
-    // Build the site
+    
     async function buildSite() {
-      buildLoading.classList.remove('hidden');
-      buildLoading.classList.add('flex');
+      loading.classList.add('visible');
       loadingText.textContent = 'Building your site...';
       
-      const fullPrompt = followUpContext 
-        ? `${userPrompt}\n\nAdditional details: ${followUpContext}`
-        : userPrompt;
+      const fullPrompt = followUpContext ? `${userPrompt}\n\n${followUpContext}` : userPrompt;
       
       try {
         currentHtml = await generateSite(fullPrompt);
-        
         showEditor();
         addMessage('user', userPrompt);
         if (followUpContext) addMessage('user', followUpContext);
-        addMessage('assistant', '✨ Your site is ready! Switch to Preview to see it, or ask me to make changes.');
+        addMessage('assistant', 'Your site is ready! Tap Preview to see it, or ask me to make changes.');
         updatePreview();
       } catch (err) {
-        showBuildError(err.message);
+        showError(err.message);
       }
     }
-
-    // User's email (set after publish)
-    let publishedEmail = '';
     
-    // Generate site HTML (using stock images)
     async function generateSite(prompt) {
-      const sysPrompt = `You are a professional web developer. Generate a COMPLETE, beautiful HTML5 website.
+      return await callGemini(`Generate a complete HTML5 website.
 
 REQUIREMENTS:
-- Valid HTML5 with <!DOCTYPE html>
-- Tailwind CSS via CDN: <script src="https://cdn.tailwindcss.com"><\/script>
-- Lucide icons via CDN: <script src="https://unpkg.com/lucide@latest"><\/script>
-- Inter font from Google Fonts
-- Mobile-first, fully responsive
-- Modern, clean design
-- Use placeholder images from https://picsum.photos/ (e.g., https://picsum.photos/800/600)
-- Proper SEO meta tags
+- Tailwind CSS via CDN
+- Lucide icons via CDN
+- Mobile-first, responsive
+- Modern, beautiful design
+- Images from picsum.photos
 - Current year: ${new Date().getFullYear()}
 
-MOBILE NAVIGATION (REQUIRED):
-Include a working hamburger menu for mobile. Use this exact pattern:
-<button id="menuBtn" class="lg:hidden">
-  <i data-lucide="menu" class="w-6 h-6"></i>
-</button>
-<nav id="mobileMenu" class="hidden lg:flex ...">
-  <!-- nav links -->
-</nav>
-
-Add this script before </body>:
+MOBILE NAV:
+<button id="menuBtn" class="lg:hidden"><i data-lucide="menu"></i></button>
+<nav id="mobileMenu" class="hidden lg:flex">...</nav>
 <script>
-  lucide.createIcons();
-  const menuBtn = document.getElementById('menuBtn');
-  const mobileMenu = document.getElementById('mobileMenu');
-  if (menuBtn && mobileMenu) {
-    menuBtn.addEventListener('click', () => {
-      mobileMenu.classList.toggle('hidden');
-    });
-  }
+lucide.createIcons();
+document.getElementById('menuBtn')?.addEventListener('click', () => {
+  document.getElementById('mobileMenu').classList.toggle('hidden');
+});
 <\/script>
 
 CONTACT FORM:
-Include a contact form section with fields: name, email, message.
-Use this exact form structure:
-<form class="contact-form" data-needasite-form="true">
-  <input type="text" name="name" placeholder="Your Name" required class="...">
-  <input type="email" name="email" placeholder="Your Email" required class="...">
-  <textarea name="message" placeholder="Your Message" required class="..."></textarea>
-  <button type="submit" class="...">Send Message</button>
-</form>
-
-Style the form beautifully with Tailwind. The form will be handled by JavaScript.
+<form data-needasite-form="true">...</form>
 
 USER REQUEST: ${prompt}
 
-OUTPUT: Complete HTML only, no markdown or explanations.`;
-
-      return await callGemini(sysPrompt);
+OUTPUT: Complete HTML only.`);
     }
-
-    // Edit site
+    
     async function editSite(instruction, html) {
-      const sysPrompt = `Edit this website per user request.
-
-CURRENT HTML:
-${html}
-
-USER REQUEST: ${instruction}
-
-Current year: ${new Date().getFullYear()}.
-
-OUTPUT: Complete updated HTML only, no markdown.`;
-
-      return await callGemini(sysPrompt);
+      return await callGemini(`Edit this website:\n\n${html}\n\nREQUEST: ${instruction}\n\nOUTPUT: Complete updated HTML only.`);
     }
-
-    // Gemini API call
+    
     async function callGemini(prompt) {
       const res = await fetch(`${GEMINI_API}?key=${GEMINI_KEY}`, {
         method: 'POST',
@@ -398,10 +982,10 @@ OUTPUT: Complete updated HTML only, no markdown.`;
           generationConfig: { temperature: 0.7, maxOutputTokens: 8192 }
         })
       });
-
+      
       if (!res.ok) {
-        const errData = await res.json().catch(() => ({}));
-        throw new Error(errData.error?.message || `API error: ${res.status}`);
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.error?.message || `API error: ${res.status}`);
       }
       
       const data = await res.json();
@@ -410,8 +994,30 @@ OUTPUT: Complete updated HTML only, no markdown.`;
       if (match) text = match[1];
       return text.trim();
     }
-
-    // Chat handler
+    
+    function showError(msg) {
+      loading.classList.remove('visible');
+      errorMsg.textContent = msg;
+      error.classList.add('visible');
+    }
+    
+    function resetBuild() {
+      buildForm.style.display = 'block';
+      error.classList.remove('visible');
+      followUp.classList.remove('visible');
+    }
+    
+    function showEditor() {
+      buildScreen.classList.add('hidden');
+      editorScreen.classList.add('visible');
+      lucide.createIcons();
+    }
+    
+    // Chat
+    const chatForm = document.getElementById('chatForm');
+    const chatInput = document.getElementById('chatInput');
+    const messages = document.getElementById('messages');
+    
     chatForm.addEventListener('submit', async (e) => {
       e.preventDefault();
       const text = chatInput.value.trim();
@@ -419,180 +1025,108 @@ OUTPUT: Complete updated HTML only, no markdown.`;
       
       chatInput.value = '';
       addMessage('user', text);
-      const thinkingId = addMessage('assistant', '🤔 Updating...');
+      const id = addMessage('assistant', 'Updating...');
       
       try {
         currentHtml = await editSite(text, currentHtml);
-        updateMessage(thinkingId, '✅ Done! Check the Preview tab.');
+        updateMessage(id, 'Done! Check the Preview.');
         updatePreview();
       } catch (err) {
-        updateMessage(thinkingId, '❌ ' + err.message);
+        updateMessage(id, 'Error: ' + err.message);
       }
     });
-
-    // UI helpers
-    function showBuildError(msg) {
-      buildLoading.classList.add('hidden');
-      document.getElementById('buildError').classList.remove('hidden');
-      document.getElementById('buildErrorMsg').textContent = msg;
-    }
-
-    function resetBuild() {
-      buildForm.classList.remove('hidden');
-      buildLoading.classList.add('hidden');
-      document.getElementById('buildError').classList.add('hidden');
-      followUpSection.classList.add('hidden');
-    }
-
-    function showEditor() {
-      buildScreen.classList.add('hidden');
-      editorScreen.classList.remove('hidden');
-      editorScreen.classList.add('flex');
-      if (isDesktop) {
-        previewPanel.classList.remove('hidden');
-        previewPanel.classList.add('flex');
-      }
-    }
-
+    
     function addMessage(role, text) {
       const id = 'msg-' + Date.now();
       const div = document.createElement('div');
       div.id = id;
-      div.className = role === 'user' 
-        ? 'ml-auto max-w-[85%] bg-purple-600 text-white px-5 py-3 text-lg rounded-2xl rounded-br-md'
-        : 'mr-auto max-w-[85%] bg-white border-2 border-gray-200 px-5 py-3 text-lg rounded-2xl rounded-bl-md shadow-sm';
+      div.className = `message message-${role}`;
       div.textContent = text;
       messages.appendChild(div);
       messages.scrollTop = messages.scrollHeight;
       return id;
     }
-
+    
     function updateMessage(id, text) {
       const el = document.getElementById(id);
       if (el) el.textContent = text;
     }
-
+    
     function updatePreview() {
-      // Inject form handling script into the HTML
-      const formHandlerScript = `
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-  const forms = document.querySelectorAll('[data-needasite-form]');
-  forms.forEach(form => {
-    form.addEventListener('submit', function(e) {
-      e.preventDefault();
-      const formData = new FormData(form);
-      const data = Object.fromEntries(formData.entries());
-      
-      // Send message to parent window
-      window.parent.postMessage({ type: 'formSubmit', data: data }, '*');
-      
-      // Show success message
-      form.innerHTML = '<div class="text-center py-8"><div class="text-4xl mb-2">✅</div><p class="text-lg font-semibold text-gray-900">Message sent!</p><p class="text-gray-500 mt-1">We\\'ll get back to you soon.</p></div>';
-    });
+      const handler = `<script>
+document.querySelectorAll('[data-needasite-form]').forEach(f => {
+  f.addEventListener('submit', e => {
+    e.preventDefault();
+    f.innerHTML = '<div class="text-center py-8"><p class="text-lg font-semibold">Message sent!</p></div>';
   });
 });
 <\/script>`;
       
-      // Insert script before </body>
-      let htmlWithHandler = currentHtml;
-      if (currentHtml.includes('</body>')) {
-        htmlWithHandler = currentHtml.replace('</body>', formHandlerScript + '</body>');
+      let html = currentHtml;
+      if (html.includes('</body>')) {
+        html = html.replace('</body>', handler + '</body>');
       } else {
-        htmlWithHandler = currentHtml + formHandlerScript;
+        html += handler;
       }
-      
-      previewFrame.srcdoc = htmlWithHandler;
+      document.getElementById('previewFrame').srcdoc = html;
     }
     
-    // Listen for form submissions from preview iframe
-    window.addEventListener('message', async (event) => {
-      if (event.data?.type === 'formSubmit') {
-        const formData = event.data.data;
-        console.log('Form submitted:', formData);
-        
-        if (publishedEmail) {
-          // Site is published - send to user's email
-          // TODO: Implement actual email sending via backend
-          console.log('Would send to:', publishedEmail, formData);
-          addMessage('assistant', `📬 New contact form submission from ${formData.name} (${formData.email})`);
-        }
-      }
+    // Tabs
+    const tabChat = document.getElementById('tabChat');
+    const tabPreview = document.getElementById('tabPreview');
+    const chatPanel = document.getElementById('chatPanel');
+    const previewPanel = document.getElementById('previewPanel');
+    
+    tabChat.addEventListener('click', () => {
+      tabChat.classList.add('active');
+      tabPreview.classList.remove('active');
+      chatPanel.classList.remove('hidden');
+      previewPanel.classList.remove('visible');
     });
-
-    // Publish modal
+    
+    tabPreview.addEventListener('click', () => {
+      tabPreview.classList.add('active');
+      tabChat.classList.remove('active');
+      previewPanel.classList.add('visible');
+      chatPanel.classList.add('hidden');
+    });
+    
+    // Publish
+    const publishModal = document.getElementById('publishModal');
+    const publishFormWrap = document.getElementById('publishFormWrap');
+    const publishSuccess = document.getElementById('publishSuccess');
+    
     document.getElementById('publishBtn').addEventListener('click', () => {
-      document.getElementById('publishModal').classList.remove('hidden');
-      document.getElementById('publishForm').classList.remove('hidden');
-      document.getElementById('publishSuccess').classList.add('hidden');
+      publishFormWrap.style.display = 'block';
+      publishSuccess.classList.remove('visible');
+      publishModal.classList.add('visible');
     });
-
-    document.getElementById('cancelPublish').addEventListener('click', closePublishModal);
-
-    document.getElementById('publishForm').addEventListener('submit', async (e) => {
+    
+    document.getElementById('cancelPublish').addEventListener('click', closeModal);
+    
+    document.getElementById('publishForm').addEventListener('submit', (e) => {
       e.preventDefault();
-      const email = document.getElementById('publishEmail').value;
-      publishedEmail = email;
+      publishedEmail = document.getElementById('publishEmail').value;
       
-      // TODO: Actually publish the site to backend
-      // For now, simulate success
       const siteId = Math.random().toString(36).substring(2, 10);
       const url = `https://${siteId}.needasite.com`;
       
-      document.getElementById('publishForm').classList.add('hidden');
-      document.getElementById('publishSuccess').classList.remove('hidden');
+      publishFormWrap.style.display = 'none';
+      publishSuccess.classList.add('visible');
       document.getElementById('publishedUrl').href = url;
       document.getElementById('publishedUrl').textContent = url;
       lucide.createIcons();
       
-      // Update publish button to show published state
-      const publishBtn = document.getElementById('publishBtn');
-      publishBtn.innerHTML = '<i data-lucide="check" class="w-4 h-4"></i> Published';
-      publishBtn.classList.remove('bg-purple-600', 'hover:bg-purple-700');
-      publishBtn.classList.add('bg-green-600');
+      const btn = document.getElementById('publishBtn');
+      btn.innerHTML = '<i data-lucide="check"></i> Published';
+      btn.style.background = 'var(--sage)';
       lucide.createIcons();
       
-      addMessage('assistant', `🚀 Your site is published! Contact form submissions will be sent to ${email}`);
-      
-      console.log('Published:', { email, siteId, htmlLength: currentHtml.length });
+      addMessage('assistant', `Published! Submissions go to ${publishedEmail}`);
     });
-
-    function closePublishModal() {
-      document.getElementById('publishModal').classList.add('hidden');
-    }
-
-    // Resize handler
-    window.addEventListener('resize', () => {
-      isDesktop = window.innerWidth >= 1024;
-    });
-
-    // Initialize Lucide icons
-    lucide.createIcons();
-
-    // === AI IMAGE GENERATION (disabled for now) ===
-    async function generateImagesAI(descriptions) {
-      if (!USE_AI_IMAGES) return [];
-      
-      const results = [];
-      for (const desc of descriptions.slice(0, 3)) {
-        try {
-          const res = await fetch(`${IMAGEN_API}?key=${GEMINI_KEY}`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              instances: [{ prompt: desc + '. High quality photography.' }],
-              parameters: { sampleCount: 1 }
-            })
-          });
-          const data = await res.json();
-          if (data.predictions?.[0]?.bytesBase64Encoded) {
-            results.push('data:image/png;base64,' + data.predictions[0].bytesBase64Encoded);
-          }
-        } catch (err) {
-          console.error('Image gen failed:', err);
-        }
-      }
-      return results;
+    
+    function closeModal() {
+      publishModal.classList.remove('visible');
     }
   </script>
 </body>
