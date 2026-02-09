@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>needasite - Demo</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * { font-family: 'Inter', sans-serif; }
+    .gradient-bg { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+  </style>
+</head>
+<body class="min-h-screen gradient-bg flex items-center justify-center p-4">
+  <div class="w-full max-w-lg">
+    <div class="bg-white rounded-2xl shadow-2xl p-6 sm:p-8">
+      <div class="text-center mb-6">
+        <h1 class="text-2xl sm:text-3xl font-bold text-gray-900">needasite</h1>
+        <p class="text-gray-500 mt-1">Describe it. We'll build it.</p>
+      </div>
+
+      <form id="form" class="space-y-4">
+        <textarea
+          id="prompt"
+          rows="4"
+          placeholder="A portfolio website for a photographer named Alex who specializes in landscape photography..."
+          class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none"
+          required
+        ></textarea>
+        <button type="submit" id="btn" class="w-full py-3 bg-purple-600 hover:bg-purple-700 text-white font-semibold rounded-xl transition disabled:opacity-50">
+          Build My Site
+        </button>
+      </form>
+
+      <div id="loading" class="hidden flex-col items-center py-8">
+        <div class="w-12 h-12 border-4 border-purple-200 border-t-purple-600 rounded-full animate-spin mb-4"></div>
+        <p class="text-gray-600">Building your site...</p>
+        <p class="text-gray-400 text-sm mt-1">~15 seconds</p>
+      </div>
+
+      <div id="result" class="hidden mt-6">
+        <div class="flex items-center gap-2 mb-3 text-green-700">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+          <span class="font-semibold">Your site is ready!</span>
+        </div>
+        <div class="flex gap-2">
+          <button id="viewBtn" class="flex-1 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg">View Site</button>
+          <button id="downloadBtn" class="flex-1 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg">Download</button>
+          <button id="newBtn" class="py-2 px-3 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg">New</button>
+        </div>
+      </div>
+
+      <div id="error" class="hidden mt-6 p-4 bg-red-50 rounded-xl text-red-700">
+        <span id="errorMsg"></span>
+      </div>
+    </div>
+    <p class="text-center text-white/60 text-sm mt-6">Demo - Powered by Gemini</p>
+  </div>
+
+  <script>
+    const GEMINI_KEY = 'AIzaSyCt6kF7rVw--3CzfmmAuyTVYYzaNwrrKWY';
+    const API = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent';
+    let generatedHtml = '';
+
+    const form = document.getElementById('form');
+    const prompt = document.getElementById('prompt');
+    const btn = document.getElementById('btn');
+    const loading = document.getElementById('loading');
+    const result = document.getElementById('result');
+    const error = document.getElementById('error');
+
+    function showLoading() {
+      form.classList.add('hidden');
+      loading.classList.remove('hidden');
+      loading.classList.add('flex');
+      result.classList.add('hidden');
+      error.classList.add('hidden');
+    }
+
+    function showResult() {
+      loading.classList.add('hidden');
+      result.classList.remove('hidden');
+    }
+
+    function showError(msg) {
+      loading.classList.add('hidden');
+      error.classList.remove('hidden');
+      document.getElementById('errorMsg').textContent = msg;
+    }
+
+    function reset() {
+      form.classList.remove('hidden');
+      loading.classList.add('hidden');
+      result.classList.add('hidden');
+      error.classList.add('hidden');
+      prompt.value = '';
+    }
+
+    async function generate(userPrompt) {
+      const sysPrompt = `You are a professional web developer. Generate a COMPLETE, beautiful HTML5 website.
+
+REQUIREMENTS:
+- Valid HTML5 with <!DOCTYPE html>
+- Tailwind CSS via CDN: <script src="https://cdn.tailwindcss.com"><\/script>
+- Inter font from Google Fonts
+- Mobile-first, fully responsive
+- Modern, clean design
+- Placeholder images from https://picsum.photos/
+- Proper SEO meta tags
+
+USER REQUEST: ${userPrompt}
+
+OUTPUT: Generate ONLY the complete HTML file, no markdown or explanations.`;
+
+      const res = await fetch(`${API}?key=${GEMINI_KEY}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: sysPrompt }] }],
+          generationConfig: { temperature: 0.7, maxOutputTokens: 8192 }
+        })
+      });
+
+      if (!res.ok) throw new Error('API error: ' + res.status);
+      const data = await res.json();
+      let html = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+      
+      // Extract HTML from code blocks if present
+      const match = html.match(/```(?:html)?\s*([\s\S]*?)```/);
+      if (match) html = match[1];
+      
+      return html.trim();
+    }
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      showLoading();
+      try {
+        generatedHtml = await generate(prompt.value);
+        showResult();
+      } catch (err) {
+        showError(err.message);
+      }
+    });
+
+    document.getElementById('viewBtn').addEventListener('click', () => {
+      const win = window.open('', '_blank');
+      win.document.write(generatedHtml);
+      win.document.close();
+    });
+
+    document.getElementById('downloadBtn').addEventListener('click', () => {
+      const blob = new Blob([generatedHtml], { type: 'text/html' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = 'my-site.html';
+      a.click();
+    });
+
+    document.getElementById('newBtn').addEventListener('click', reset);
+  </script>
+</body>
+</html>

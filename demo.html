@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>needasite - Build & Edit</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
     * { font-family: 'Inter', sans-serif; }
@@ -65,20 +66,19 @@
     <!-- Top Bar -->
     <div class="bg-white border-b px-4 py-3 flex items-center justify-between">
       <h1 class="font-bold text-gray-900">needasite</h1>
-      <div class="flex gap-2">
-        <button id="downloadSite" class="px-3 py-1.5 text-sm bg-gray-100 text-gray-700 rounded-lg font-medium hover:bg-gray-200">
-          ⬇ Download
-        </button>
-        <button id="publishBtn" class="px-3 py-1.5 text-sm bg-purple-600 text-white rounded-lg font-medium hover:bg-purple-700">
-          🚀 Publish
-        </button>
-      </div>
+      <button id="publishBtn" class="flex items-center gap-1.5 px-3 py-1.5 text-sm bg-purple-600 text-white rounded-lg font-medium hover:bg-purple-700">
+        <i data-lucide="upload" class="w-4 h-4"></i> Publish
+      </button>
     </div>
 
     <!-- Mobile Tab Bar -->
     <div class="lg:hidden flex border-b bg-white">
-      <button id="tabChat" class="flex-1 py-3 text-center font-medium text-purple-600 border-b-2 border-purple-600">💬 Chat</button>
-      <button id="tabPreview" class="flex-1 py-3 text-center font-medium text-gray-500 border-b-2 border-transparent">👁 Preview</button>
+      <button id="tabChat" class="flex-1 py-3 flex items-center justify-center gap-1.5 font-medium text-purple-600 border-b-2 border-purple-600">
+        <i data-lucide="message-circle" class="w-4 h-4"></i> Chat
+      </button>
+      <button id="tabPreview" class="flex-1 py-3 flex items-center justify-center gap-1.5 font-medium text-gray-500 border-b-2 border-transparent">
+        <i data-lucide="eye" class="w-4 h-4"></i> Preview
+      </button>
     </div>
 
     <!-- Main Content -->
@@ -116,7 +116,9 @@
       </form>
       
       <div id="publishSuccess" class="hidden text-center py-4">
-        <div class="text-4xl mb-2">🎉</div>
+        <div class="flex justify-center mb-2 text-green-500">
+          <i data-lucide="check-circle" class="w-12 h-12"></i>
+        </div>
         <p class="font-semibold text-gray-900 mb-2">Your site is live!</p>
         <a id="publishedUrl" href="#" target="_blank" class="text-purple-600 hover:text-purple-700 break-all"></a>
         <button onclick="closePublishModal()" class="mt-4 w-full py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl">Done</button>
@@ -265,12 +267,34 @@ If clear enough, respond: READY`;
 REQUIREMENTS:
 - Valid HTML5 with <!DOCTYPE html>
 - Tailwind CSS via CDN: <script src="https://cdn.tailwindcss.com"><\/script>
+- Lucide icons via CDN: <script src="https://unpkg.com/lucide@latest"><\/script>
 - Inter font from Google Fonts
 - Mobile-first, fully responsive
 - Modern, clean design
 - Use placeholder images from https://picsum.photos/ (e.g., https://picsum.photos/800/600)
 - Proper SEO meta tags
 - Current year: ${new Date().getFullYear()}
+
+MOBILE NAVIGATION (REQUIRED):
+Include a working hamburger menu for mobile. Use this exact pattern:
+<button id="menuBtn" class="lg:hidden">
+  <i data-lucide="menu" class="w-6 h-6"></i>
+</button>
+<nav id="mobileMenu" class="hidden lg:flex ...">
+  <!-- nav links -->
+</nav>
+
+Add this script before </body>:
+<script>
+  lucide.createIcons();
+  const menuBtn = document.getElementById('menuBtn');
+  const mobileMenu = document.getElementById('mobileMenu');
+  if (menuBtn && mobileMenu) {
+    menuBtn.addEventListener('click', () => {
+      mobileMenu.classList.toggle('hidden');
+    });
+  }
+<\/script>
 
 CONTACT FORM:
 Include a contact form section with fields: name, email, message.
@@ -439,15 +463,6 @@ document.addEventListener('DOMContentLoaded', function() {
       }
     });
 
-    // Download
-    document.getElementById('downloadSite').addEventListener('click', () => {
-      const blob = new Blob([currentHtml], { type: 'text/html' });
-      const a = document.createElement('a');
-      a.href = URL.createObjectURL(blob);
-      a.download = 'my-site.html';
-      a.click();
-    });
-
     // Publish modal
     document.getElementById('publishBtn').addEventListener('click', () => {
       document.getElementById('publishModal').classList.remove('hidden');
@@ -471,11 +486,14 @@ document.addEventListener('DOMContentLoaded', function() {
       document.getElementById('publishSuccess').classList.remove('hidden');
       document.getElementById('publishedUrl').href = url;
       document.getElementById('publishedUrl').textContent = url;
+      lucide.createIcons();
       
       // Update publish button to show published state
-      document.getElementById('publishBtn').textContent = '✓ Published';
-      document.getElementById('publishBtn').classList.remove('bg-purple-600', 'hover:bg-purple-700');
-      document.getElementById('publishBtn').classList.add('bg-green-600');
+      const publishBtn = document.getElementById('publishBtn');
+      publishBtn.innerHTML = '<i data-lucide="check" class="w-4 h-4"></i> Published';
+      publishBtn.classList.remove('bg-purple-600', 'hover:bg-purple-700');
+      publishBtn.classList.add('bg-green-600');
+      lucide.createIcons();
       
       addMessage('assistant', `🚀 Your site is published! Contact form submissions will be sent to ${email}`);
       
@@ -490,6 +508,9 @@ document.addEventListener('DOMContentLoaded', function() {
     window.addEventListener('resize', () => {
       isDesktop = window.innerWidth >= 1024;
     });
+
+    // Initialize Lucide icons
+    lucide.createIcons();
 
     // === AI IMAGE GENERATION (disabled for now) ===
     async function generateImagesAI(descriptions) {
