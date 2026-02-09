@@ -255,6 +255,9 @@ If clear enough, respond: READY`;
       }
     }
 
+    // User's email (set after publish)
+    let publishedEmail = '';
+    
     // Generate site HTML (using stock images)
     async function generateSite(prompt) {
       const sysPrompt = `You are a professional web developer. Generate a COMPLETE, beautiful HTML5 website.
@@ -268,6 +271,18 @@ REQUIREMENTS:
 - Use placeholder images from https://picsum.photos/ (e.g., https://picsum.photos/800/600)
 - Proper SEO meta tags
 - Current year: ${new Date().getFullYear()}
+
+CONTACT FORM:
+Include a contact form section with fields: name, email, message.
+Use this exact form structure:
+<form class="contact-form" data-needasite-form="true">
+  <input type="text" name="name" placeholder="Your Name" required class="...">
+  <input type="email" name="email" placeholder="Your Email" required class="...">
+  <textarea name="message" placeholder="Your Message" required class="..."></textarea>
+  <button type="submit" class="...">Send Message</button>
+</form>
+
+Style the form beautifully with Tailwind. The form will be handled by JavaScript.
 
 USER REQUEST: ${prompt}
 
@@ -377,8 +392,52 @@ OUTPUT: Complete updated HTML only, no markdown.`;
     }
 
     function updatePreview() {
-      previewFrame.srcdoc = currentHtml;
+      // Inject form handling script into the HTML
+      const formHandlerScript = `
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const forms = document.querySelectorAll('[data-needasite-form]');
+  forms.forEach(form => {
+    form.addEventListener('submit', function(e) {
+      e.preventDefault();
+      const formData = new FormData(form);
+      const data = Object.fromEntries(formData.entries());
+      
+      // Send message to parent window
+      window.parent.postMessage({ type: 'formSubmit', data: data }, '*');
+      
+      // Show success message
+      form.innerHTML = '<div class="text-center py-8"><div class="text-4xl mb-2">✅</div><p class="text-lg font-semibold text-gray-900">Message sent!</p><p class="text-gray-500 mt-1">We\\'ll get back to you soon.</p></div>';
+    });
+  });
+});
+<\/script>`;
+      
+      // Insert script before </body>
+      let htmlWithHandler = currentHtml;
+      if (currentHtml.includes('</body>')) {
+        htmlWithHandler = currentHtml.replace('</body>', formHandlerScript + '</body>');
+      } else {
+        htmlWithHandler = currentHtml + formHandlerScript;
+      }
+      
+      previewFrame.srcdoc = htmlWithHandler;
     }
+    
+    // Listen for form submissions from preview iframe
+    window.addEventListener('message', async (event) => {
+      if (event.data?.type === 'formSubmit') {
+        const formData = event.data.data;
+        console.log('Form submitted:', formData);
+        
+        if (publishedEmail) {
+          // Site is published - send to user's email
+          // TODO: Implement actual email sending via backend
+          console.log('Would send to:', publishedEmail, formData);
+          addMessage('assistant', `📬 New contact form submission from ${formData.name} (${formData.email})`);
+        }
+      }
+    });
 
     // Download
     document.getElementById('downloadSite').addEventListener('click', () => {
@@ -401,8 +460,9 @@ OUTPUT: Complete updated HTML only, no markdown.`;
     document.getElementById('publishForm').addEventListener('submit', async (e) => {
       e.preventDefault();
       const email = document.getElementById('publishEmail').value;
+      publishedEmail = email;
       
-      // TODO: Actually publish the site and save email
+      // TODO: Actually publish the site to backend
       // For now, simulate success
       const siteId = Math.random().toString(36).substring(2, 10);
       const url = `https://${siteId}.needasite.com`;
@@ -412,7 +472,14 @@ OUTPUT: Complete updated HTML only, no markdown.`;
       document.getElementById('publishedUrl').href = url;
       document.getElementById('publishedUrl').textContent = url;
       
-      console.log('Publish requested:', { email, siteId, htmlLength: currentHtml.length });
+      // Update publish button to show published state
+      document.getElementById('publishBtn').textContent = '✓ Published';
+      document.getElementById('publishBtn').classList.remove('bg-purple-600', 'hover:bg-purple-700');
+      document.getElementById('publishBtn').classList.add('bg-green-600');
+      
+      addMessage('assistant', `🚀 Your site is published! Contact form submissions will be sent to ${email}`);
+      
+      console.log('Published:', { email, siteId, htmlLength: currentHtml.length });
     });
 
     function closePublishModal() {
