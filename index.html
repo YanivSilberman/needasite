@@ -4,19 +4,20 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>needasite — Tell us what you want. We'll build it.</title>
-  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <script src="https://unpkg.com/lucide@latest"></script>
   <style>
     :root {
-      --cream: #FFFBF5;
-      --cream-dark: #F5EDE3;
-      --brown: #2D2A26;
-      --brown-light: #5C564E;
-      --coral: #E8846B;
-      --coral-dark: #D6705A;
-      --coral-light: #FFEEE9;
-      --sage: #7CAE7A;
-      --sage-light: #E8F5E8;
+      --bg: #0A0A0B;
+      --surface: #141416;
+      --surface-2: #1C1C1F;
+      --border: #2A2A2E;
+      --text: #FAFAFA;
+      --text-muted: #71717A;
+      --accent-1: #8B5CF6;
+      --accent-2: #06B6D4;
+      --accent-3: #F472B6;
+      --glow: rgba(139, 92, 246, 0.4);
     }
     
     * {
@@ -26,71 +27,68 @@
     }
     
     body {
-      font-family: 'DM Sans', -apple-system, sans-serif;
-      background: var(--cream);
-      color: var(--brown);
+      font-family: 'Outfit', -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
       min-height: 100vh;
       overflow-x: hidden;
     }
     
-    /* Subtle grain texture */
-    body::before {
-      content: '';
+    /* Animated gradient background */
+    .bg-gradient {
       position: fixed;
       inset: 0;
-      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
-      opacity: 0.03;
+      background: 
+        radial-gradient(ellipse 80% 50% at 50% -20%, rgba(139, 92, 246, 0.15), transparent),
+        radial-gradient(ellipse 60% 40% at 80% 100%, rgba(6, 182, 212, 0.1), transparent),
+        radial-gradient(ellipse 40% 30% at 10% 80%, rgba(244, 114, 182, 0.08), transparent);
       pointer-events: none;
-      z-index: 1000;
     }
     
-    /* Floating organic shapes */
-    .shape {
-      position: absolute;
-      border-radius: 50%;
-      opacity: 0.5;
-      filter: blur(60px);
-      z-index: 0;
+    /* Grid pattern */
+    .bg-grid {
+      position: fixed;
+      inset: 0;
+      background-image: 
+        linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
+      background-size: 60px 60px;
+      mask-image: radial-gradient(ellipse 80% 60% at 50% 30%, black, transparent);
+      pointer-events: none;
     }
-    .shape-1 {
+    
+    /* Floating orbs */
+    .orb {
+      position: fixed;
+      border-radius: 50%;
+      filter: blur(80px);
+      opacity: 0.5;
+      animation: float 20s ease-in-out infinite;
+    }
+    .orb-1 {
+      width: 500px;
+      height: 500px;
+      background: var(--accent-1);
+      top: -200px;
+      right: -100px;
+      opacity: 0.15;
+    }
+    .orb-2 {
       width: 400px;
       height: 400px;
-      background: var(--coral-light);
-      top: -100px;
-      right: -100px;
-      animation: float1 20s ease-in-out infinite;
-    }
-    .shape-2 {
-      width: 300px;
-      height: 300px;
-      background: var(--sage-light);
-      bottom: -50px;
-      left: -50px;
-      animation: float2 25s ease-in-out infinite;
-    }
-    .shape-3 {
-      width: 200px;
-      height: 200px;
-      background: var(--cream-dark);
-      top: 40%;
-      left: 10%;
-      animation: float3 18s ease-in-out infinite;
+      background: var(--accent-2);
+      bottom: -150px;
+      left: -100px;
+      opacity: 0.1;
+      animation-delay: -10s;
     }
     
-    @keyframes float1 {
+    @keyframes float {
       0%, 100% { transform: translate(0, 0) scale(1); }
-      50% { transform: translate(-30px, 30px) scale(1.1); }
-    }
-    @keyframes float2 {
-      0%, 100% { transform: translate(0, 0) scale(1); }
-      50% { transform: translate(40px, -20px) scale(1.05); }
-    }
-    @keyframes float3 {
-      0%, 100% { transform: translate(0, 0); }
-      50% { transform: translate(20px, 40px); }
+      50% { transform: translate(30px, 20px) scale(1.05); }
     }
     
-    /* Main container */
+    /* Container */
     .container {
       position: relative;
       z-index: 1;
@@ -104,110 +102,125 @@
     
     /* Card */
     .card {
-      background: white;
+      background: var(--surface);
+      border: 1px solid var(--border);
       border-radius: 24px;
-      padding: 3rem 2.5rem;
-      max-width: 480px;
+      padding: 2.5rem 2rem;
+      max-width: 440px;
       width: 100%;
+      backdrop-filter: blur(20px);
       box-shadow: 
-        0 4px 6px -1px rgba(45, 42, 38, 0.05),
-        0 20px 40px -8px rgba(45, 42, 38, 0.1);
-      animation: cardEntrance 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        0 0 0 1px rgba(255,255,255,0.05) inset,
+        0 20px 50px -10px rgba(0,0,0,0.5);
+      animation: cardIn 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
       opacity: 0;
-      transform: translateY(30px);
+      transform: translateY(20px);
     }
     
-    @keyframes cardEntrance {
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
+    @keyframes cardIn {
+      to { opacity: 1; transform: translateY(0); }
     }
     
     /* Logo */
     .logo {
-      font-family: 'Fraunces', Georgia, serif;
-      font-weight: 700;
-      font-size: 2.5rem;
-      color: var(--brown);
       text-align: center;
       margin-bottom: 0.5rem;
-      letter-spacing: -0.02em;
-      animation: fadeUp 0.6s 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      animation: fadeUp 0.6s 0.1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
       opacity: 0;
-      transform: translateY(15px);
     }
     
-    .logo .dot {
-      color: var(--coral);
+    .logo-text {
+      font-size: 2.75rem;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      background: linear-gradient(135deg, #fff 0%, #fff 40%, var(--accent-1) 60%, var(--accent-2) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      display: inline-block;
+    }
+    
+    .logo-dot {
+      display: inline-block;
+      width: 10px;
+      height: 10px;
+      background: linear-gradient(135deg, var(--accent-1), var(--accent-2));
+      border-radius: 50%;
+      margin-left: 2px;
+      vertical-align: middle;
+      position: relative;
+      top: -4px;
+      box-shadow: 0 0 20px var(--glow);
     }
     
     /* Tagline */
     .tagline {
       text-align: center;
-      color: var(--brown-light);
-      font-size: 1.125rem;
-      margin-bottom: 2.5rem;
-      animation: fadeUp 0.6s 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      color: var(--text-muted);
+      font-size: 1.0625rem;
+      margin-bottom: 2rem;
+      animation: fadeUp 0.6s 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
       opacity: 0;
-      transform: translateY(15px);
     }
     
     @keyframes fadeUp {
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
+      to { opacity: 1; transform: translateY(0); }
     }
     
     /* Form */
     .form {
-      animation: fadeUp 0.6s 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      animation: fadeUp 0.6s 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
       opacity: 0;
-      transform: translateY(15px);
     }
     
-    .input-wrapper {
+    .input-wrap {
       position: relative;
-      margin-bottom: 1.5rem;
+      margin-bottom: 1.25rem;
     }
     
-    .input-wrapper textarea {
+    .input-wrap::before {
+      content: '';
+      position: absolute;
+      inset: -1px;
+      border-radius: 17px;
+      background: linear-gradient(135deg, var(--border), transparent, var(--border));
+      z-index: -1;
+    }
+    
+    textarea {
       width: 100%;
-      min-height: 140px;
-      padding: 1.25rem;
-      font-family: 'DM Sans', sans-serif;
-      font-size: 1.125rem;
+      min-height: 120px;
+      padding: 1rem 1.125rem;
+      font-family: 'Outfit', sans-serif;
+      font-size: 1rem;
       line-height: 1.6;
-      color: var(--brown);
-      background: var(--cream);
-      border: 2px solid transparent;
+      color: var(--text);
+      background: var(--surface-2);
+      border: 1px solid transparent;
       border-radius: 16px;
       resize: none;
-      transition: all 0.3s ease;
+      transition: all 0.25s ease;
     }
     
-    .input-wrapper textarea::placeholder {
-      color: var(--brown-light);
-      opacity: 0.6;
+    textarea::placeholder {
+      color: var(--text-muted);
     }
     
-    .input-wrapper textarea:focus {
+    textarea:focus {
       outline: none;
-      background: white;
-      border-color: var(--coral);
-      box-shadow: 0 0 0 4px var(--coral-light);
+      border-color: var(--accent-1);
+      box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.15), 0 0 30px -5px var(--glow);
     }
     
     /* Button */
     .btn {
       width: 100%;
-      padding: 1.125rem 2rem;
-      font-family: 'DM Sans', sans-serif;
-      font-size: 1.125rem;
+      padding: 1rem 1.5rem;
+      font-family: 'Outfit', sans-serif;
+      font-size: 1rem;
       font-weight: 600;
       color: white;
-      background: var(--coral);
+      background: linear-gradient(135deg, var(--accent-1), #7C3AED);
       border: none;
       border-radius: 14px;
       cursor: pointer;
@@ -220,36 +233,36 @@
       content: '';
       position: absolute;
       inset: 0;
-      background: linear-gradient(180deg, rgba(255,255,255,0.15) 0%, transparent 50%);
+      background: linear-gradient(180deg, rgba(255,255,255,0.1) 0%, transparent 50%);
+      pointer-events: none;
     }
     
     .btn:hover {
-      background: var(--coral-dark);
       transform: translateY(-2px);
-      box-shadow: 0 8px 20px -4px rgba(232, 132, 107, 0.4);
+      box-shadow: 0 10px 30px -5px var(--glow), 0 0 0 1px rgba(139, 92, 246, 0.3);
     }
     
     .btn:active {
       transform: translateY(0);
     }
     
-    /* Follow-up section */
+    /* Follow-up */
     .followup {
       display: none;
     }
     
     .followup.visible {
       display: block;
-      animation: fadeUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      animation: fadeUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
     }
     
-    .question-bubble {
-      background: var(--sage-light);
-      padding: 1.25rem;
-      border-radius: 16px;
-      border-bottom-left-radius: 4px;
+    .question {
+      background: linear-gradient(135deg, rgba(139, 92, 246, 0.1), rgba(6, 182, 212, 0.05));
+      border: 1px solid rgba(139, 92, 246, 0.2);
+      padding: 1rem 1.125rem;
+      border-radius: 14px;
       margin-bottom: 1rem;
-      font-size: 1.0625rem;
+      font-size: 0.9375rem;
       line-height: 1.5;
     }
     
@@ -260,41 +273,42 @@
     
     .btn-secondary {
       flex: 1;
-      padding: 1rem;
-      font-family: 'DM Sans', sans-serif;
-      font-size: 1rem;
+      padding: 0.875rem;
+      font-family: 'Outfit', sans-serif;
+      font-size: 0.9375rem;
       font-weight: 500;
-      color: var(--brown);
-      background: var(--cream-dark);
-      border: none;
+      color: var(--text-muted);
+      background: var(--surface-2);
+      border: 1px solid var(--border);
       border-radius: 12px;
       cursor: pointer;
       transition: all 0.2s ease;
     }
     
     .btn-secondary:hover {
-      background: #EBE3D9;
+      color: var(--text);
+      border-color: var(--text-muted);
     }
     
-    .btn-primary-sm {
+    .btn-sm {
       flex: 1;
-      padding: 1rem;
-      font-family: 'DM Sans', sans-serif;
-      font-size: 1rem;
+      padding: 0.875rem;
+      font-family: 'Outfit', sans-serif;
+      font-size: 0.9375rem;
       font-weight: 600;
       color: white;
-      background: var(--coral);
+      background: linear-gradient(135deg, var(--accent-1), #7C3AED);
       border: none;
       border-radius: 12px;
       cursor: pointer;
       transition: all 0.2s ease;
     }
     
-    .btn-primary-sm:hover {
-      background: var(--coral-dark);
+    .btn-sm:hover {
+      box-shadow: 0 5px 20px -5px var(--glow);
     }
     
-    /* Loading state */
+    /* Loading */
     .loading {
       display: none;
       flex-direction: column;
@@ -304,16 +318,16 @@
     
     .loading.visible {
       display: flex;
-      animation: fadeUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      animation: fadeUp 0.3s ease;
     }
     
     .spinner {
-      width: 48px;
-      height: 48px;
-      border: 3px solid var(--cream-dark);
-      border-top-color: var(--coral);
+      width: 44px;
+      height: 44px;
+      border: 3px solid var(--border);
+      border-top-color: var(--accent-1);
       border-radius: 50%;
-      animation: spin 0.8s linear infinite;
+      animation: spin 0.7s linear infinite;
       margin-bottom: 1rem;
     }
     
@@ -322,109 +336,103 @@
     }
     
     .loading-text {
-      font-size: 1.0625rem;
-      color: var(--brown-light);
+      color: var(--text-muted);
+      font-size: 0.9375rem;
     }
     
-    /* Error state */
+    /* Error */
     .error {
       display: none;
-      background: #FEF2F2;
+      background: rgba(239, 68, 68, 0.1);
+      border: 1px solid rgba(239, 68, 68, 0.2);
       border-radius: 12px;
-      padding: 1.25rem;
+      padding: 1rem;
       margin-top: 1rem;
     }
     
     .error.visible {
       display: block;
-      animation: shake 0.5s ease;
+      animation: shake 0.4s ease;
     }
     
     @keyframes shake {
       0%, 100% { transform: translateX(0); }
-      20%, 60% { transform: translateX(-4px); }
-      40%, 80% { transform: translateX(4px); }
+      25% { transform: translateX(-4px); }
+      75% { transform: translateX(4px); }
     }
     
     .error-title {
       font-weight: 600;
-      color: #B91C1C;
+      color: #F87171;
       margin-bottom: 0.25rem;
-    }
-    
-    .error-msg {
-      color: #DC2626;
       font-size: 0.9375rem;
     }
     
+    .error-msg {
+      color: #FCA5A5;
+      font-size: 0.875rem;
+    }
+    
     .error-retry {
-      color: var(--coral);
+      color: var(--accent-1);
       font-weight: 500;
       background: none;
       border: none;
       cursor: pointer;
       margin-top: 0.5rem;
-      padding: 0;
-    }
-    
-    .error-retry:hover {
-      text-decoration: underline;
+      font-size: 0.875rem;
     }
     
     /* Footer */
     .footer {
       margin-top: 2rem;
       text-align: center;
-      color: var(--brown-light);
+      color: var(--text-muted);
+      font-size: 0.8125rem;
       opacity: 0.6;
-      font-size: 0.875rem;
-      animation: fadeUp 0.6s 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      animation: fadeUp 0.6s 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
       opacity: 0;
     }
     
-    /* Editor screen */
-    .editor-screen {
+    /* ===== EDITOR ===== */
+    .editor {
       display: none;
       min-height: 100vh;
       flex-direction: column;
     }
     
-    .editor-screen.visible {
+    .editor.visible {
       display: flex;
     }
     
     .topbar {
-      background: white;
-      border-bottom: 1px solid var(--cream-dark);
-      padding: 0.875rem 1.25rem;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 0.75rem 1.25rem;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      position: relative;
-      z-index: 10;
     }
     
     .topbar-logo {
-      font-family: 'Fraunces', Georgia, serif;
+      font-size: 1.125rem;
       font-weight: 700;
-      font-size: 1.25rem;
-      color: var(--brown);
-    }
-    
-    .topbar-logo .dot {
-      color: var(--coral);
+      letter-spacing: -0.02em;
+      background: linear-gradient(135deg, #fff, var(--accent-1));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
     }
     
     .topbar-btn {
       display: flex;
       align-items: center;
-      gap: 0.5rem;
-      padding: 0.625rem 1rem;
-      font-family: 'DM Sans', sans-serif;
-      font-size: 0.9375rem;
+      gap: 0.4rem;
+      padding: 0.5rem 1rem;
+      font-family: 'Outfit', sans-serif;
+      font-size: 0.875rem;
       font-weight: 600;
       color: white;
-      background: var(--coral);
+      background: linear-gradient(135deg, var(--accent-1), #7C3AED);
       border: none;
       border-radius: 10px;
       cursor: pointer;
@@ -432,19 +440,19 @@
     }
     
     .topbar-btn:hover {
-      background: var(--coral-dark);
+      box-shadow: 0 5px 20px -5px var(--glow);
     }
     
     .topbar-btn svg {
-      width: 18px;
-      height: 18px;
+      width: 16px;
+      height: 16px;
     }
     
     /* Tabs */
     .tabs {
       display: flex;
-      background: white;
-      border-bottom: 1px solid var(--cream-dark);
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
     }
     
     @media (min-width: 1024px) {
@@ -453,15 +461,15 @@
     
     .tab {
       flex: 1;
-      padding: 1rem;
+      padding: 0.875rem;
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 0.5rem;
-      font-family: 'DM Sans', sans-serif;
-      font-size: 1rem;
+      gap: 0.4rem;
+      font-family: 'Outfit', sans-serif;
+      font-size: 0.9375rem;
       font-weight: 500;
-      color: var(--brown-light);
+      color: var(--text-muted);
       background: none;
       border: none;
       border-bottom: 2px solid transparent;
@@ -470,13 +478,13 @@
     }
     
     .tab.active {
-      color: var(--coral);
-      border-bottom-color: var(--coral);
+      color: var(--accent-1);
+      border-bottom-color: var(--accent-1);
     }
     
     .tab svg {
-      width: 18px;
-      height: 18px;
+      width: 16px;
+      height: 16px;
     }
     
     /* Editor layout */
@@ -488,112 +496,105 @@
     }
     
     @media (min-width: 1024px) {
-      .editor-main {
-        flex-direction: row;
-      }
+      .editor-main { flex-direction: row; }
     }
     
     .chat-panel {
       flex: 1;
       display: flex;
       flex-direction: column;
-      background: var(--cream);
-      max-height: 100%;
+      background: var(--bg);
     }
     
     @media (min-width: 1024px) {
       .chat-panel {
-        max-width: 420px;
-        border-right: 1px solid var(--cream-dark);
+        max-width: 400px;
+        border-right: 1px solid var(--border);
       }
     }
     
-    .chat-panel.hidden {
-      display: none;
-    }
+    .chat-panel.hidden { display: none; }
     
     @media (min-width: 1024px) {
-      .chat-panel.hidden {
-        display: flex;
-      }
+      .chat-panel.hidden { display: flex; }
     }
     
     .messages {
       flex: 1;
       overflow-y: auto;
-      padding: 1.25rem;
+      padding: 1rem;
       display: flex;
       flex-direction: column;
-      gap: 0.75rem;
+      gap: 0.625rem;
     }
     
     .message {
       max-width: 85%;
-      padding: 0.875rem 1.125rem;
-      border-radius: 16px;
-      font-size: 1rem;
+      padding: 0.75rem 1rem;
+      border-radius: 14px;
+      font-size: 0.9375rem;
       line-height: 1.5;
-      animation: messageIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      animation: msgIn 0.25s cubic-bezier(0.16, 1, 0.3, 1);
     }
     
-    @keyframes messageIn {
-      from {
-        opacity: 0;
-        transform: translateY(10px) scale(0.95);
-      }
+    @keyframes msgIn {
+      from { opacity: 0; transform: translateY(8px) scale(0.97); }
     }
     
-    .message-user {
+    .msg-user {
       align-self: flex-end;
-      background: var(--coral);
+      background: linear-gradient(135deg, var(--accent-1), #7C3AED);
       color: white;
       border-bottom-right-radius: 4px;
     }
     
-    .message-assistant {
+    .msg-assistant {
       align-self: flex-start;
-      background: white;
-      color: var(--brown);
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      color: var(--text);
       border-bottom-left-radius: 4px;
-      box-shadow: 0 2px 8px rgba(45, 42, 38, 0.06);
     }
     
-    .chat-input-wrap {
-      padding: 1rem;
-      background: white;
-      border-top: 1px solid var(--cream-dark);
+    .chat-input-area {
+      padding: 0.875rem;
+      background: var(--surface);
+      border-top: 1px solid var(--border);
     }
     
     .chat-form {
       display: flex;
-      gap: 0.75rem;
+      gap: 0.625rem;
     }
     
     .chat-input {
       flex: 1;
-      padding: 0.875rem 1rem;
-      font-family: 'DM Sans', sans-serif;
-      font-size: 1rem;
-      color: var(--brown);
-      background: var(--cream);
-      border: 2px solid transparent;
+      padding: 0.75rem 1rem;
+      font-family: 'Outfit', sans-serif;
+      font-size: 0.9375rem;
+      color: var(--text);
+      background: var(--surface-2);
+      border: 1px solid var(--border);
       border-radius: 12px;
       transition: all 0.2s ease;
     }
     
     .chat-input:focus {
       outline: none;
-      background: white;
-      border-color: var(--coral);
+      border-color: var(--accent-1);
+    }
+    
+    .chat-input::placeholder {
+      color: var(--text-muted);
     }
     
     .chat-send {
-      padding: 0.875rem 1.25rem;
-      font-family: 'DM Sans', sans-serif;
-      font-size: 1rem;
+      padding: 0.75rem 1.125rem;
+      font-family: 'Outfit', sans-serif;
+      font-size: 0.9375rem;
       font-weight: 600;
       color: white;
-      background: var(--coral);
+      background: linear-gradient(135deg, var(--accent-1), #7C3AED);
       border: none;
       border-radius: 12px;
       cursor: pointer;
@@ -601,7 +602,7 @@
     }
     
     .chat-send:hover {
-      background: var(--coral-dark);
+      box-shadow: 0 5px 15px -5px var(--glow);
     }
     
     .preview-panel {
@@ -610,14 +611,10 @@
       background: white;
     }
     
-    .preview-panel.visible {
-      display: flex;
-    }
+    .preview-panel.visible { display: flex; }
     
     @media (min-width: 1024px) {
-      .preview-panel {
-        display: flex;
-      }
+      .preview-panel { display: flex; }
     }
     
     .preview-frame {
@@ -626,19 +623,19 @@
     }
     
     /* Modal */
-    .modal-backdrop {
+    .modal-bg {
       display: none;
       position: fixed;
       inset: 0;
-      background: rgba(45, 42, 38, 0.4);
-      backdrop-filter: blur(4px);
+      background: rgba(0, 0, 0, 0.7);
+      backdrop-filter: blur(8px);
       z-index: 100;
       align-items: center;
       justify-content: center;
       padding: 1.5rem;
     }
     
-    .modal-backdrop.visible {
+    .modal-bg.visible {
       display: flex;
       animation: fadeIn 0.2s ease;
     }
@@ -648,137 +645,128 @@
     }
     
     .modal {
-      background: white;
+      background: var(--surface);
+      border: 1px solid var(--border);
       border-radius: 20px;
-      padding: 2rem;
-      max-width: 420px;
+      padding: 1.75rem;
+      max-width: 400px;
       width: 100%;
-      box-shadow: 0 25px 50px -12px rgba(45, 42, 38, 0.25);
+      box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.5);
       animation: modalIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
     }
     
     @keyframes modalIn {
-      from {
-        opacity: 0;
-        transform: scale(0.95) translateY(10px);
-      }
+      from { opacity: 0; transform: scale(0.95) translateY(10px); }
     }
     
     .modal-title {
-      font-family: 'Fraunces', Georgia, serif;
-      font-weight: 600;
-      font-size: 1.5rem;
-      color: var(--brown);
-      margin-bottom: 0.5rem;
+      font-weight: 700;
+      font-size: 1.25rem;
+      margin-bottom: 0.375rem;
     }
     
     .modal-desc {
-      color: var(--brown-light);
-      margin-bottom: 1.5rem;
+      color: var(--text-muted);
+      font-size: 0.9375rem;
+      margin-bottom: 1.25rem;
     }
     
     .modal-input {
       width: 100%;
-      padding: 1rem;
-      font-family: 'DM Sans', sans-serif;
-      font-size: 1rem;
-      color: var(--brown);
-      background: var(--cream);
-      border: 2px solid transparent;
+      padding: 0.875rem 1rem;
+      font-family: 'Outfit', sans-serif;
+      font-size: 0.9375rem;
+      color: var(--text);
+      background: var(--surface-2);
+      border: 1px solid var(--border);
       border-radius: 12px;
       margin-bottom: 1rem;
-      transition: all 0.2s ease;
     }
     
     .modal-input:focus {
       outline: none;
-      background: white;
-      border-color: var(--coral);
+      border-color: var(--accent-1);
     }
     
     .modal-success {
       display: none;
       text-align: center;
-      padding: 1rem 0;
+      padding: 0.5rem 0;
     }
     
-    .modal-success.visible {
-      display: block;
-    }
+    .modal-success.visible { display: block; }
     
     .modal-success-icon {
-      width: 64px;
-      height: 64px;
+      width: 56px;
+      height: 56px;
       margin: 0 auto 1rem;
-      color: var(--sage);
+      color: #10B981;
     }
     
     .modal-success-title {
-      font-family: 'Fraunces', Georgia, serif;
-      font-weight: 600;
-      font-size: 1.375rem;
-      color: var(--brown);
-      margin-bottom: 0.75rem;
+      font-weight: 700;
+      font-size: 1.125rem;
+      margin-bottom: 0.5rem;
     }
     
     .modal-success-url {
-      color: var(--coral);
+      color: var(--accent-1);
       font-weight: 500;
+      font-size: 0.9375rem;
       word-break: break-all;
     }
     
     .modal-done {
       width: 100%;
-      margin-top: 1.5rem;
-      padding: 0.875rem;
-      font-family: 'DM Sans', sans-serif;
-      font-size: 1rem;
+      margin-top: 1.25rem;
+      padding: 0.75rem;
+      font-family: 'Outfit', sans-serif;
+      font-size: 0.9375rem;
       font-weight: 500;
-      color: var(--brown);
-      background: var(--cream-dark);
-      border: none;
+      color: var(--text);
+      background: var(--surface-2);
+      border: 1px solid var(--border);
       border-radius: 12px;
       cursor: pointer;
     }
     
     .modal-done:hover {
-      background: #EBE3D9;
+      border-color: var(--text-muted);
     }
     
-    /* Hide build screen when editor is shown */
-    .build-screen.hidden {
-      display: none;
-    }
+    .build-screen.hidden { display: none; }
   </style>
 </head>
 <body>
-  <!-- Floating shapes -->
-  <div class="shape shape-1"></div>
-  <div class="shape shape-2"></div>
-  <div class="shape shape-3"></div>
+  <div class="bg-gradient"></div>
+  <div class="bg-grid"></div>
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
   
   <!-- Build Screen -->
   <div id="buildScreen" class="build-screen">
     <div class="container">
       <div class="card">
-        <h1 class="logo">needasite<span class="dot">.</span></h1>
+        <div class="logo">
+          <span class="logo-text">needasite</span><span class="logo-dot"></span>
+        </div>
         <p class="tagline">Tell us what you want. We'll build it.</p>
         
         <form id="buildForm" class="form">
-          <div class="input-wrapper">
+          <div class="input-wrap">
             <textarea id="initialPrompt" placeholder="A website for my bakery called Sweet Dreams..." required>A portfolio website for a photographer named Alex who specializes in landscape photography</textarea>
           </div>
           <button type="submit" class="btn">Continue</button>
         </form>
         
         <div id="followUp" class="followup">
-          <div id="followUpQuestion" class="question-bubble"></div>
-          <div class="input-wrapper">
-            <textarea id="followUpAnswer" placeholder="Your answer..."></textarea>
+          <div id="followUpQ" class="question"></div>
+          <div class="input-wrap">
+            <textarea id="followUpA" placeholder="Your answer..."></textarea>
           </div>
           <div class="btn-row">
             <button id="skipBtn" class="btn-secondary">Skip</button>
-            <button id="buildBtn" class="btn-primary-sm">Build My Site</button>
+            <button id="buildBtn" class="btn-sm">Build My Site</button>
           </div>
         </div>
         
@@ -797,31 +785,28 @@
     </div>
   </div>
   
-  <!-- Editor Screen -->
-  <div id="editorScreen" class="editor-screen">
+  <!-- Editor -->
+  <div id="editor" class="editor">
     <div class="topbar">
-      <div class="topbar-logo">needasite<span class="dot">.</span></div>
+      <div class="topbar-logo">needasite.</div>
       <button id="publishBtn" class="topbar-btn">
-        <i data-lucide="upload"></i>
-        Publish
+        <i data-lucide="upload"></i> Publish
       </button>
     </div>
     
     <div class="tabs">
       <button id="tabChat" class="tab active">
-        <i data-lucide="message-circle"></i>
-        Chat
+        <i data-lucide="message-circle"></i> Chat
       </button>
       <button id="tabPreview" class="tab">
-        <i data-lucide="eye"></i>
-        Preview
+        <i data-lucide="eye"></i> Preview
       </button>
     </div>
     
     <div class="editor-main">
       <div id="chatPanel" class="chat-panel">
         <div id="messages" class="messages"></div>
-        <div class="chat-input-wrap">
+        <div class="chat-input-area">
           <form id="chatForm" class="chat-form">
             <input type="text" id="chatInput" class="chat-input" placeholder="Change the colors...">
             <button type="submit" class="chat-send">Send</button>
@@ -834,24 +819,24 @@
     </div>
   </div>
   
-  <!-- Publish Modal -->
-  <div id="publishModal" class="modal-backdrop">
+  <!-- Modal -->
+  <div id="modal" class="modal-bg">
     <div class="modal">
-      <div id="publishFormWrap">
+      <div id="modalForm">
         <h2 class="modal-title">Put your site online</h2>
-        <p class="modal-desc">Enter your email and we'll send you the link.</p>
+        <p class="modal-desc">Enter your email to get the link.</p>
         <form id="publishForm">
-          <input type="email" id="publishEmail" class="modal-input" placeholder="you@example.com" required>
+          <input type="email" id="pubEmail" class="modal-input" placeholder="you@example.com" required>
           <div class="btn-row">
-            <button type="button" id="cancelPublish" class="btn-secondary">Cancel</button>
-            <button type="submit" class="btn-primary-sm">Publish</button>
+            <button type="button" id="cancelPub" class="btn-secondary">Cancel</button>
+            <button type="submit" class="btn-sm">Publish</button>
           </div>
         </form>
       </div>
-      <div id="publishSuccess" class="modal-success">
+      <div id="modalSuccess" class="modal-success">
         <i data-lucide="check-circle" class="modal-success-icon"></i>
         <p class="modal-success-title">Your site is live!</p>
-        <a id="publishedUrl" class="modal-success-url" href="#" target="_blank"></a>
+        <a id="pubUrl" class="modal-success-url" href="#" target="_blank"></a>
         <button onclick="closeModal()" class="modal-done">Done</button>
       </div>
     </div>
@@ -861,41 +846,27 @@
     const GEMINI_KEY = 'AIzaSyCt6kF7rVw--3CzfmmAuyTVYYzaNwrrKWY';
     const GEMINI_API = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent';
     
-    let currentHtml = '';
-    let userPrompt = '';
-    let followUpContext = '';
-    let publishedEmail = '';
+    let currentHtml = '', userPrompt = '', followUpCtx = '', pubEmail = '';
     
-    // Elements
-    const buildScreen = document.getElementById('buildScreen');
-    const editorScreen = document.getElementById('editorScreen');
-    const buildForm = document.getElementById('buildForm');
-    const followUp = document.getElementById('followUp');
-    const loading = document.getElementById('loading');
-    const loadingText = document.getElementById('loadingText');
-    const error = document.getElementById('error');
-    const errorMsg = document.getElementById('errorMsg');
-    
-    // Initialize Lucide
     lucide.createIcons();
     
-    // Build form submit
-    buildForm.addEventListener('submit', async (e) => {
+    const $ = id => document.getElementById(id);
+    
+    $('buildForm').addEventListener('submit', async e => {
       e.preventDefault();
-      userPrompt = document.getElementById('initialPrompt').value.trim();
-      if (userPrompt.length < 10) return alert('Please add more detail');
+      userPrompt = $('initialPrompt').value.trim();
+      if (userPrompt.length < 10) return alert('Add more detail');
       
-      buildForm.style.display = 'none';
-      loading.classList.add('visible');
-      loadingText.textContent = 'Thinking...';
+      $('buildForm').style.display = 'none';
+      $('loading').classList.add('visible');
+      $('loadingText').textContent = 'Thinking...';
       
       try {
-        const question = await getFollowUp(userPrompt);
-        loading.classList.remove('visible');
-        
-        if (question) {
-          document.getElementById('followUpQuestion').textContent = question;
-          followUp.classList.add('visible');
+        const q = await getFollowUp(userPrompt);
+        $('loading').classList.remove('visible');
+        if (q) {
+          $('followUpQ').textContent = q;
+          $('followUp').classList.add('visible');
         } else {
           await buildSite();
         }
@@ -904,229 +875,157 @@
       }
     });
     
-    // Follow-up handlers
-    document.getElementById('buildBtn').addEventListener('click', async () => {
-      followUpContext = document.getElementById('followUpAnswer').value;
-      followUp.classList.remove('visible');
+    $('buildBtn').onclick = async () => {
+      followUpCtx = $('followUpA').value;
+      $('followUp').classList.remove('visible');
       await buildSite();
-    });
+    };
     
-    document.getElementById('skipBtn').addEventListener('click', async () => {
-      followUp.classList.remove('visible');
+    $('skipBtn').onclick = async () => {
+      $('followUp').classList.remove('visible');
       await buildSite();
-    });
+    };
     
-    async function getFollowUp(prompt) {
-      const text = await callGemini(`A user wants: "${prompt}"\n\nAsk ONE short question about style or features. If clear, respond: READY`);
-      if (text.includes('READY') || text.length < 10) return null;
-      return text;
+    async function getFollowUp(p) {
+      const t = await callGemini(`User wants: "${p}"\n\nAsk ONE short question about style/features. If clear, respond: READY`);
+      return t.includes('READY') || t.length < 10 ? null : t;
     }
     
     async function buildSite() {
-      loading.classList.add('visible');
-      loadingText.textContent = 'Building your site...';
-      
-      const fullPrompt = followUpContext ? `${userPrompt}\n\n${followUpContext}` : userPrompt;
-      
+      $('loading').classList.add('visible');
+      $('loadingText').textContent = 'Building...';
+      const full = followUpCtx ? `${userPrompt}\n\n${followUpCtx}` : userPrompt;
       try {
-        currentHtml = await generateSite(fullPrompt);
+        currentHtml = await genSite(full);
         showEditor();
-        addMessage('user', userPrompt);
-        if (followUpContext) addMessage('user', followUpContext);
-        addMessage('assistant', 'Your site is ready! Tap Preview to see it, or ask me to make changes.');
+        addMsg('user', userPrompt);
+        if (followUpCtx) addMsg('user', followUpCtx);
+        addMsg('assistant', 'Your site is ready! Tap Preview to see it.');
         updatePreview();
       } catch (err) {
         showError(err.message);
       }
     }
     
-    async function generateSite(prompt) {
-      return await callGemini(`Generate a complete HTML5 website.
-
-REQUIREMENTS:
-- Tailwind CSS via CDN
-- Lucide icons via CDN
-- Mobile-first, responsive
-- Modern, beautiful design
-- Images from picsum.photos
-- Current year: ${new Date().getFullYear()}
-
-MOBILE NAV:
-<button id="menuBtn" class="lg:hidden"><i data-lucide="menu"></i></button>
-<nav id="mobileMenu" class="hidden lg:flex">...</nav>
-<script>
-lucide.createIcons();
-document.getElementById('menuBtn')?.addEventListener('click', () => {
-  document.getElementById('mobileMenu').classList.toggle('hidden');
-});
-<\/script>
-
-CONTACT FORM:
-<form data-needasite-form="true">...</form>
-
-USER REQUEST: ${prompt}
-
-OUTPUT: Complete HTML only.`);
+    async function genSite(p) {
+      return await callGemini(`Generate HTML5 website. Tailwind+Lucide CDN. Mobile-first. Images from picsum.photos. Year: ${new Date().getFullYear()}. Mobile nav with menuBtn toggle. Contact form with data-needasite-form. USER: ${p}. OUTPUT: HTML only.`);
     }
     
-    async function editSite(instruction, html) {
-      return await callGemini(`Edit this website:\n\n${html}\n\nREQUEST: ${instruction}\n\nOUTPUT: Complete updated HTML only.`);
+    async function editSite(i, h) {
+      return await callGemini(`Edit:\n${h}\n\nRequest: ${i}\n\nOutput: Updated HTML only.`);
     }
     
-    async function callGemini(prompt) {
-      const res = await fetch(`${GEMINI_API}?key=${GEMINI_KEY}`, {
+    async function callGemini(p) {
+      const r = await fetch(`${GEMINI_API}?key=${GEMINI_KEY}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          contents: [{ parts: [{ text: prompt }] }],
-          generationConfig: { temperature: 0.7, maxOutputTokens: 8192 }
-        })
+        body: JSON.stringify({ contents: [{ parts: [{ text: p }] }], generationConfig: { temperature: 0.7, maxOutputTokens: 8192 } })
       });
-      
-      if (!res.ok) {
-        const err = await res.json().catch(() => ({}));
-        throw new Error(err.error?.message || `API error: ${res.status}`);
-      }
-      
-      const data = await res.json();
-      let text = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
-      const match = text.match(/```(?:html)?\s*([\s\S]*?)```/);
-      if (match) text = match[1];
-      return text.trim();
+      if (!r.ok) { const e = await r.json().catch(() => ({})); throw new Error(e.error?.message || `Error ${r.status}`); }
+      const d = await r.json();
+      let t = d.candidates?.[0]?.content?.parts?.[0]?.text || '';
+      const m = t.match(/```(?:html)?\s*([\s\S]*?)```/);
+      return (m ? m[1] : t).trim();
     }
     
-    function showError(msg) {
-      loading.classList.remove('visible');
-      errorMsg.textContent = msg;
-      error.classList.add('visible');
+    function showError(m) {
+      $('loading').classList.remove('visible');
+      $('errorMsg').textContent = m;
+      $('error').classList.add('visible');
     }
     
     function resetBuild() {
-      buildForm.style.display = 'block';
-      error.classList.remove('visible');
-      followUp.classList.remove('visible');
+      $('buildForm').style.display = 'block';
+      $('error').classList.remove('visible');
+      $('followUp').classList.remove('visible');
     }
     
     function showEditor() {
-      buildScreen.classList.add('hidden');
-      editorScreen.classList.add('visible');
+      $('buildScreen').classList.add('hidden');
+      $('editor').classList.add('visible');
       lucide.createIcons();
     }
     
-    // Chat
-    const chatForm = document.getElementById('chatForm');
-    const chatInput = document.getElementById('chatInput');
-    const messages = document.getElementById('messages');
-    
-    chatForm.addEventListener('submit', async (e) => {
+    $('chatForm').addEventListener('submit', async e => {
       e.preventDefault();
-      const text = chatInput.value.trim();
-      if (!text) return;
-      
-      chatInput.value = '';
-      addMessage('user', text);
-      const id = addMessage('assistant', 'Updating...');
-      
+      const t = $('chatInput').value.trim();
+      if (!t) return;
+      $('chatInput').value = '';
+      addMsg('user', t);
+      const id = addMsg('assistant', 'Updating...');
       try {
-        currentHtml = await editSite(text, currentHtml);
-        updateMessage(id, 'Done! Check the Preview.');
+        currentHtml = await editSite(t, currentHtml);
+        updMsg(id, 'Done! Check Preview.');
         updatePreview();
       } catch (err) {
-        updateMessage(id, 'Error: ' + err.message);
+        updMsg(id, 'Error: ' + err.message);
       }
     });
     
-    function addMessage(role, text) {
+    function addMsg(r, t) {
       const id = 'msg-' + Date.now();
-      const div = document.createElement('div');
-      div.id = id;
-      div.className = `message message-${role}`;
-      div.textContent = text;
-      messages.appendChild(div);
-      messages.scrollTop = messages.scrollHeight;
+      const d = document.createElement('div');
+      d.id = id;
+      d.className = `message msg-${r}`;
+      d.textContent = t;
+      $('messages').appendChild(d);
+      $('messages').scrollTop = $('messages').scrollHeight;
       return id;
     }
     
-    function updateMessage(id, text) {
-      const el = document.getElementById(id);
-      if (el) el.textContent = text;
+    function updMsg(id, t) {
+      const e = $(id);
+      if (e) e.textContent = t;
     }
     
     function updatePreview() {
-      const handler = `<script>
-document.querySelectorAll('[data-needasite-form]').forEach(f => {
-  f.addEventListener('submit', e => {
-    e.preventDefault();
-    f.innerHTML = '<div class="text-center py-8"><p class="text-lg font-semibold">Message sent!</p></div>';
-  });
-});
-<\/script>`;
-      
+      const h = `<script>document.querySelectorAll('[data-needasite-form]').forEach(f=>{f.onsubmit=e=>{e.preventDefault();f.innerHTML='<p style=\"text-align:center;padding:2rem\">Sent!</p>'}})<\/script>`;
       let html = currentHtml;
-      if (html.includes('</body>')) {
-        html = html.replace('</body>', handler + '</body>');
-      } else {
-        html += handler;
-      }
-      document.getElementById('previewFrame').srcdoc = html;
+      html = html.includes('</body>') ? html.replace('</body>', h + '</body>') : html + h;
+      $('previewFrame').srcdoc = html;
     }
     
-    // Tabs
-    const tabChat = document.getElementById('tabChat');
-    const tabPreview = document.getElementById('tabPreview');
-    const chatPanel = document.getElementById('chatPanel');
-    const previewPanel = document.getElementById('previewPanel');
+    $('tabChat').onclick = () => {
+      $('tabChat').classList.add('active');
+      $('tabPreview').classList.remove('active');
+      $('chatPanel').classList.remove('hidden');
+      $('previewPanel').classList.remove('visible');
+    };
     
-    tabChat.addEventListener('click', () => {
-      tabChat.classList.add('active');
-      tabPreview.classList.remove('active');
-      chatPanel.classList.remove('hidden');
-      previewPanel.classList.remove('visible');
-    });
+    $('tabPreview').onclick = () => {
+      $('tabPreview').classList.add('active');
+      $('tabChat').classList.remove('active');
+      $('previewPanel').classList.add('visible');
+      $('chatPanel').classList.add('hidden');
+    };
     
-    tabPreview.addEventListener('click', () => {
-      tabPreview.classList.add('active');
-      tabChat.classList.remove('active');
-      previewPanel.classList.add('visible');
-      chatPanel.classList.add('hidden');
-    });
+    $('publishBtn').onclick = () => {
+      $('modalForm').style.display = 'block';
+      $('modalSuccess').classList.remove('visible');
+      $('modal').classList.add('visible');
+    };
     
-    // Publish
-    const publishModal = document.getElementById('publishModal');
-    const publishFormWrap = document.getElementById('publishFormWrap');
-    const publishSuccess = document.getElementById('publishSuccess');
+    $('cancelPub').onclick = closeModal;
     
-    document.getElementById('publishBtn').addEventListener('click', () => {
-      publishFormWrap.style.display = 'block';
-      publishSuccess.classList.remove('visible');
-      publishModal.classList.add('visible');
-    });
-    
-    document.getElementById('cancelPublish').addEventListener('click', closeModal);
-    
-    document.getElementById('publishForm').addEventListener('submit', (e) => {
+    $('publishForm').onsubmit = e => {
       e.preventDefault();
-      publishedEmail = document.getElementById('publishEmail').value;
-      
-      const siteId = Math.random().toString(36).substring(2, 10);
-      const url = `https://${siteId}.needasite.com`;
-      
-      publishFormWrap.style.display = 'none';
-      publishSuccess.classList.add('visible');
-      document.getElementById('publishedUrl').href = url;
-      document.getElementById('publishedUrl').textContent = url;
+      pubEmail = $('pubEmail').value;
+      const id = Math.random().toString(36).slice(2, 10);
+      const url = `https://${id}.needasite.com`;
+      $('modalForm').style.display = 'none';
+      $('modalSuccess').classList.add('visible');
+      $('pubUrl').href = url;
+      $('pubUrl').textContent = url;
       lucide.createIcons();
-      
-      const btn = document.getElementById('publishBtn');
-      btn.innerHTML = '<i data-lucide="check"></i> Published';
-      btn.style.background = 'var(--sage)';
+      const b = $('publishBtn');
+      b.innerHTML = '<i data-lucide="check"></i> Published';
+      b.style.background = '#10B981';
       lucide.createIcons();
-      
-      addMessage('assistant', `Published! Submissions go to ${publishedEmail}`);
-    });
+      addMsg('assistant', `Published! Submissions go to ${pubEmail}`);
+    };
     
     function closeModal() {
-      publishModal.classList.remove('visible');
+      $('modal').classList.remove('visible');
     }
   </script>
 </body>
