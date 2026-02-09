@@ -846,7 +846,7 @@
         </div>
       </div>
       <div id="previewPanel" class="preview-panel">
-        <iframe id="previewFrame" class="preview-frame"></iframe>
+        <iframe id="previewFrame" class="preview-frame" sandbox="allow-scripts allow-same-origin"></iframe>
       </div>
     </div>
   </div>
@@ -887,6 +887,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <base target="_self">
   <title>${c.title || 'My Website'}</title>
   <meta name="description" content="${c.description || ''}">
   <script src="https://cdn.tailwindcss.com"><\/script>
