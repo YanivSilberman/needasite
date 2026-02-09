@@ -5,58 +5,103 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>needasite - Build & Edit</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            // Brand purples (warm)
+            purple: {
+              50: '#F5F3FF',
+              100: '#EDE9FE',
+              500: '#8B5CF6',
+              600: '#7C3AED',
+              700: '#6D28D9',
+            },
+            // Warm grays (stone)
+            gray: {
+              50: '#FAFAF9',
+              100: '#F5F5F4',
+              200: '#E7E5E4',
+              500: '#78716C',
+              600: '#57534E',
+              700: '#44403C',
+              900: '#1C1917',
+            },
+            success: '#16A34A',
+          },
+          fontFamily: {
+            sans: ['Inter', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'sans-serif'],
+          },
+          fontSize: {
+            base: ['1.125rem', { lineHeight: '1.6' }], // 18px base
+            lg: ['1.25rem', { lineHeight: '1.6' }],
+            xl: ['1.5rem', { lineHeight: '1.4' }],
+            '2xl': ['1.875rem', { lineHeight: '1.3' }],
+            '3xl': ['2.25rem', { lineHeight: '1.2' }],
+          },
+        }
+      }
+    }
+  </script>
   <script src="https://unpkg.com/lucide@latest"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
-    * { font-family: 'Inter', sans-serif; }
-    .gradient-bg { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+    * { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+    .gradient-bg { background: linear-gradient(135deg, #7C3AED 0%, #6D28D9 100%); }
+    /* Ensure minimum touch targets */
+    button, a, input, textarea { min-height: 48px; }
+    /* Better focus states */
+    :focus-visible { outline: 2px solid #7C3AED; outline-offset: 2px; }
+    input:focus, textarea:focus { outline: none; }
   </style>
 </head>
-<body class="min-h-screen bg-gray-100">
+<body class="min-h-screen bg-gray-50 text-gray-700">
   
   <!-- Initial Build Screen -->
   <div id="buildScreen" class="min-h-screen gradient-bg flex items-center justify-center p-4">
     <div class="w-full max-w-lg">
-      <div class="bg-white rounded-2xl shadow-2xl p-6 sm:p-8">
-        <div class="text-center mb-6">
-          <h1 class="text-2xl sm:text-3xl font-bold text-gray-900">needasite</h1>
-          <p class="text-gray-500 mt-1">Describe it. We'll build it.</p>
+      <div class="bg-white rounded-2xl shadow-xl p-8 sm:p-10">
+        <div class="text-center mb-8">
+          <h1 class="text-3xl font-bold text-gray-900 tracking-tight">needasite</h1>
+          <p class="text-gray-500 mt-2 text-lg">Tell us what you want. We'll build it.</p>
         </div>
 
-        <form id="buildForm" class="space-y-4">
+        <form id="buildForm" class="space-y-5">
           <textarea
             id="initialPrompt"
             rows="4"
-            placeholder="Describe your website..."
-            class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none"
+            placeholder="A website for my bakery called Sweet Dreams..."
+            class="w-full px-4 py-4 text-lg border-2 border-gray-200 rounded-2xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 resize-none"
             required
           >A portfolio website for a photographer named Alex who specializes in landscape photography</textarea>
-          <button type="submit" class="w-full py-3 bg-purple-600 hover:bg-purple-700 text-white font-semibold rounded-xl transition">
+          <button type="submit" class="w-full py-4 bg-purple-600 hover:bg-purple-700 text-white text-lg font-semibold rounded-xl transition shadow-sm">
             Continue
           </button>
         </form>
 
-        <div id="followUpSection" class="hidden space-y-4">
-          <div id="followUpQuestion" class="p-4 bg-purple-50 rounded-xl text-gray-700"></div>
+        <div id="followUpSection" class="hidden space-y-5">
+          <div id="followUpQuestion" class="p-5 bg-purple-50 rounded-2xl text-gray-700 text-lg"></div>
           <textarea id="followUpAnswer" rows="3" placeholder="Your answer..."
-            class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none"></textarea>
-          <div class="flex gap-2">
-            <button id="skipFollowUp" class="flex-1 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium rounded-xl transition">Skip</button>
-            <button id="submitFollowUp" class="flex-1 py-3 bg-purple-600 hover:bg-purple-700 text-white font-semibold rounded-xl transition">Build Site</button>
+            class="w-full px-4 py-4 text-lg border-2 border-gray-200 rounded-2xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 resize-none"></textarea>
+          <div class="flex gap-3">
+            <button id="skipFollowUp" class="flex-1 py-4 bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium rounded-xl transition">Skip</button>
+            <button id="submitFollowUp" class="flex-1 py-4 bg-purple-600 hover:bg-purple-700 text-white font-semibold rounded-xl transition shadow-sm">Build My Site</button>
           </div>
         </div>
 
-        <div id="buildLoading" class="hidden flex-col items-center py-8">
-          <div class="w-12 h-12 border-4 border-purple-200 border-t-purple-600 rounded-full animate-spin mb-4"></div>
-          <p id="loadingText" class="text-gray-600">Building your site...</p>
+        <div id="buildLoading" class="hidden flex-col items-center py-10">
+          <div class="w-14 h-14 border-4 border-purple-200 border-t-purple-600 rounded-full animate-spin mb-5"></div>
+          <p id="loadingText" class="text-gray-600 text-lg">Building your site...</p>
         </div>
 
-        <div id="buildError" class="hidden mt-6 p-4 bg-red-50 rounded-xl text-red-700">
-          <span id="buildErrorMsg"></span>
-          <button onclick="resetBuild()" class="mt-2 text-sm underline">Try again</button>
+        <div id="buildError" class="hidden mt-6 p-5 bg-red-50 rounded-2xl text-red-700">
+          <p class="font-medium mb-1">Something went wrong</p>
+          <p id="buildErrorMsg" class="text-red-600"></p>
+          <button onclick="resetBuild()" class="mt-3 text-purple-600 font-medium hover:underline">Try again</button>
         </div>
       </div>
-      <p class="text-center text-white/60 text-sm mt-6">Powered by AI</p>
+      <p class="text-center text-white/70 mt-8">Powered by AI</p>
     </div>
   </div>
 
@@ -64,20 +109,20 @@
   <div id="editorScreen" class="hidden min-h-screen flex flex-col">
     
     <!-- Top Bar -->
-    <div class="bg-white border-b px-4 py-3 flex items-center justify-between">
-      <h1 class="font-bold text-gray-900">needasite</h1>
-      <button id="publishBtn" class="flex items-center gap-1.5 px-3 py-1.5 text-sm bg-purple-600 text-white rounded-lg font-medium hover:bg-purple-700">
-        <i data-lucide="upload" class="w-4 h-4"></i> Publish
+    <div class="bg-white border-b border-gray-200 px-4 py-3 flex items-center justify-between">
+      <h1 class="text-xl font-bold text-gray-900 tracking-tight">needasite</h1>
+      <button id="publishBtn" class="flex items-center gap-2 px-5 py-2.5 bg-purple-600 text-white rounded-xl font-medium hover:bg-purple-700 shadow-sm transition">
+        <i data-lucide="upload" class="w-5 h-5"></i> Publish
       </button>
     </div>
 
     <!-- Mobile Tab Bar -->
-    <div class="lg:hidden flex border-b bg-white">
-      <button id="tabChat" class="flex-1 py-3 flex items-center justify-center gap-1.5 font-medium text-purple-600 border-b-2 border-purple-600">
-        <i data-lucide="message-circle" class="w-4 h-4"></i> Chat
+    <div class="lg:hidden flex border-b border-gray-200 bg-white">
+      <button id="tabChat" class="flex-1 py-4 flex items-center justify-center gap-2 text-lg font-medium text-purple-600 border-b-2 border-purple-600">
+        <i data-lucide="message-circle" class="w-5 h-5"></i> Chat
       </button>
-      <button id="tabPreview" class="flex-1 py-3 flex items-center justify-center gap-1.5 font-medium text-gray-500 border-b-2 border-transparent">
-        <i data-lucide="eye" class="w-4 h-4"></i> Preview
+      <button id="tabPreview" class="flex-1 py-4 flex items-center justify-center gap-2 text-lg font-medium text-gray-500 border-b-2 border-transparent">
+        <i data-lucide="eye" class="w-5 h-5"></i> Preview
       </button>
     </div>
 
@@ -85,11 +130,11 @@
     <div class="flex-1 flex flex-col lg:flex-row overflow-hidden">
       <div id="chatPanel" class="flex-1 flex flex-col bg-gray-50 lg:max-w-md lg:border-r">
         <div id="messages" class="flex-1 overflow-y-auto p-4 space-y-4"></div>
-        <div class="p-4 bg-white border-t">
-          <form id="chatForm" class="flex gap-2">
-            <input type="text" id="chatInput" placeholder="Make the header blue..."
-              class="flex-1 px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent">
-            <button type="submit" class="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-xl font-medium">Send</button>
+        <div class="p-4 bg-white border-t border-gray-200">
+          <form id="chatForm" class="flex gap-3">
+            <input type="text" id="chatInput" placeholder="Change the colors..."
+              class="flex-1 px-4 py-3 text-lg border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500">
+            <button type="submit" class="px-5 py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-xl font-medium shadow-sm transition">Send</button>
           </form>
         </div>
       </div>
@@ -101,27 +146,27 @@
   </div>
 
   <!-- Publish Modal -->
-  <div id="publishModal" class="hidden fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
-    <div class="bg-white rounded-2xl shadow-2xl p-6 w-full max-w-md">
-      <h2 class="text-xl font-bold text-gray-900 mb-2">Publish Your Site</h2>
-      <p class="text-gray-500 mb-4">Enter your email to get your live site URL.</p>
+  <div id="publishModal" class="hidden fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-md">
+      <h2 class="text-2xl font-bold text-gray-900 mb-2">Put Your Site Online</h2>
+      <p class="text-gray-500 text-lg mb-6">Enter your email. We'll send you the link.</p>
       
-      <form id="publishForm" class="space-y-4">
+      <form id="publishForm" class="space-y-5">
         <input type="email" id="publishEmail" placeholder="you@example.com" required
-          class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent">
-        <div class="flex gap-2">
-          <button type="button" id="cancelPublish" class="flex-1 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium rounded-xl transition">Cancel</button>
-          <button type="submit" class="flex-1 py-3 bg-purple-600 hover:bg-purple-700 text-white font-semibold rounded-xl transition">Publish</button>
+          class="w-full px-4 py-4 text-lg border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500">
+        <div class="flex gap-3">
+          <button type="button" id="cancelPublish" class="flex-1 py-4 bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium rounded-xl transition">Cancel</button>
+          <button type="submit" class="flex-1 py-4 bg-purple-600 hover:bg-purple-700 text-white font-semibold rounded-xl transition shadow-sm">Publish</button>
         </div>
       </form>
       
-      <div id="publishSuccess" class="hidden text-center py-4">
-        <div class="flex justify-center mb-2 text-green-500">
-          <i data-lucide="check-circle" class="w-12 h-12"></i>
+      <div id="publishSuccess" class="hidden text-center py-6">
+        <div class="flex justify-center mb-4 text-success">
+          <i data-lucide="check-circle" class="w-16 h-16"></i>
         </div>
-        <p class="font-semibold text-gray-900 mb-2">Your site is live!</p>
-        <a id="publishedUrl" href="#" target="_blank" class="text-purple-600 hover:text-purple-700 break-all"></a>
-        <button onclick="closePublishModal()" class="mt-4 w-full py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl">Done</button>
+        <p class="text-xl font-semibold text-gray-900 mb-3">Your site is live!</p>
+        <a id="publishedUrl" href="#" target="_blank" class="text-lg text-purple-600 hover:text-purple-700 break-all font-medium"></a>
+        <button onclick="closePublishModal()" class="mt-6 w-full py-4 bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium rounded-xl transition">Done</button>
       </div>
     </div>
   </div>
@@ -402,8 +447,8 @@ OUTPUT: Complete updated HTML only, no markdown.`;
       const div = document.createElement('div');
       div.id = id;
       div.className = role === 'user' 
-        ? 'ml-auto max-w-[80%] bg-purple-600 text-white px-4 py-2 rounded-2xl rounded-br-md'
-        : 'mr-auto max-w-[80%] bg-white border px-4 py-2 rounded-2xl rounded-bl-md shadow-sm';
+        ? 'ml-auto max-w-[85%] bg-purple-600 text-white px-5 py-3 text-lg rounded-2xl rounded-br-md'
+        : 'mr-auto max-w-[85%] bg-white border-2 border-gray-200 px-5 py-3 text-lg rounded-2xl rounded-bl-md shadow-sm';
       div.textContent = text;
       messages.appendChild(div);
       messages.scrollTop = messages.scrollHeight;
