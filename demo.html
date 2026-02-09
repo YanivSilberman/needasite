@@ -334,13 +334,18 @@ Be specific about style, lighting, composition. No text in images.`;
 
     // Generate site HTML
     async function generateSite(prompt, images) {
+      console.log('generateSite called');
+      console.log('Prompt length:', prompt.length);
+      console.log('Images count:', images.length);
+      
       // Create placeholder references - ONLY use descriptions, never data URLs!
       const imagePlaceholders = images.map((img, i) => {
         const desc = (img.description || 'Image').slice(0, 200);
+        console.log(`Image ${i+1} desc:`, desc.slice(0, 50));
         return `{{IMAGE_${i + 1}}} - ${desc}`;
       }).join('\n');
       
-      console.log('Image placeholders:', imagePlaceholders);
+      console.log('Image placeholders total length:', imagePlaceholders.length);
       
       const sysPrompt = `You are a professional web developer. Generate a COMPLETE, beautiful HTML5 website.
 
@@ -380,10 +385,13 @@ OUTPUT: Complete HTML only, no markdown.`;
     
     // Edit site
     async function editSite(instruction, html) {
+      console.log('editSite called, HTML length:', html.length);
+      
       // Replace data URLs with placeholders to reduce token count
       let htmlWithPlaceholders = html;
       const dataUrlPattern = /data:image\/[^;]+;base64,[A-Za-z0-9+/=]+/g;
       const dataUrls = html.match(dataUrlPattern) || [];
+      console.log('Found', dataUrls.length, 'data URLs to replace');
       
       dataUrls.forEach((url, i) => {
         htmlWithPlaceholders = htmlWithPlaceholders.replace(url, `{{EXISTING_IMAGE_${i + 1}}}`);
@@ -413,6 +421,15 @@ OUTPUT: Complete updated HTML only, no markdown.`;
     }
 
     async function callGemini(prompt) {
+      // Safety check - prompts should never be huge
+      if (prompt.length > 100000) {
+        console.error('PROMPT TOO LARGE:', prompt.length, 'chars');
+        console.error('First 500 chars:', prompt.slice(0, 500));
+        console.error('Last 500 chars:', prompt.slice(-500));
+        throw new Error(`Prompt too large (${prompt.length} chars). This is a bug.`);
+      }
+      console.log('Calling Gemini with prompt length:', prompt.length);
+      
       const res = await fetch(`${GEMINI_API}?key=${GEMINI_KEY}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
