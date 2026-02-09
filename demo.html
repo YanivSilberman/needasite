@@ -244,7 +244,7 @@ Otherwise respond with just the question (no intro, no "I'd like to ask", just t
         
         // Step 2: Generate images
         loadingText.textContent = `Generating ${imageDescs.length} images...`;
-        const imageUrls = await generateImages(imageDescs, fullPrompt);
+        const imageUrls = await generateImages(imageDescs);
         
         // Step 3: Generate HTML
         loadingText.textContent = 'Building your site...';
@@ -286,25 +286,37 @@ Be specific about style, lighting, composition. No text in images.`;
     }
 
     // Generate images
-    async function generateImages(descriptions, context) {
+    async function generateImages(descriptions) {
       const results = [];
       
-      for (let i = 0; i < descriptions.length; i++) {
-        loadingText.textContent = `Generating image ${i + 1}/${descriptions.length}...`;
+      // Limit descriptions to reasonable length
+      const safeDescriptions = descriptions.map(d => 
+        typeof d === 'string' ? d.slice(0, 500) : 'Abstract background'
+      );
+      
+      for (let i = 0; i < safeDescriptions.length; i++) {
+        loadingText.textContent = `Generating image ${i + 1}/${safeDescriptions.length}...`;
         try {
+          const imagePrompt = safeDescriptions[i] + '. High quality, professional photography.';
+          console.log(`Image ${i + 1} prompt (${imagePrompt.length} chars):`, imagePrompt.slice(0, 100));
+          
           const res = await fetch(`${IMAGEN_API}?key=${GEMINI_KEY}`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-              instances: [{ prompt: descriptions[i] + '. High quality, professional photography.' }],
+              instances: [{ prompt: imagePrompt }],
               parameters: { sampleCount: 1 }
             })
           });
 
           const data = await res.json();
+          if (data.error) {
+            console.error('Imagen error:', data.error);
+            continue;
+          }
           if (data.predictions?.[0]?.bytesBase64Encoded) {
             results.push({
-              description: descriptions[i],
+              description: safeDescriptions[i],
               dataUrl: 'data:image/png;base64,' + data.predictions[0].bytesBase64Encoded
             });
           }
@@ -322,8 +334,13 @@ Be specific about style, lighting, composition. No text in images.`;
 
     // Generate site HTML
     async function generateSite(prompt, images) {
-      // Create placeholder references (not the actual data URLs - too big!)
-      const imagePlaceholders = images.map((img, i) => `{{IMAGE_${i + 1}}} - ${img.description}`).join('\n');
+      // Create placeholder references - ONLY use descriptions, never data URLs!
+      const imagePlaceholders = images.map((img, i) => {
+        const desc = (img.description || 'Image').slice(0, 200);
+        return `{{IMAGE_${i + 1}}} - ${desc}`;
+      }).join('\n');
+      
+      console.log('Image placeholders:', imagePlaceholders);
       
       const sysPrompt = `You are a professional web developer. Generate a COMPLETE, beautiful HTML5 website.
 
