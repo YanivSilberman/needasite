@@ -3,161 +3,597 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>needasite - Demo</title>
+  <title>needasite - Build & Edit</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            // Brand purples (warm)
+            purple: {
+              50: '#F5F3FF',
+              100: '#EDE9FE',
+              500: '#8B5CF6',
+              600: '#7C3AED',
+              700: '#6D28D9',
+            },
+            // Warm grays (stone)
+            gray: {
+              50: '#FAFAF9',
+              100: '#F5F5F4',
+              200: '#E7E5E4',
+              500: '#78716C',
+              600: '#57534E',
+              700: '#44403C',
+              900: '#1C1917',
+            },
+            success: '#16A34A',
+          },
+          fontFamily: {
+            sans: ['Inter', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'sans-serif'],
+          },
+          fontSize: {
+            base: ['1.125rem', { lineHeight: '1.6' }], // 18px base
+            lg: ['1.25rem', { lineHeight: '1.6' }],
+            xl: ['1.5rem', { lineHeight: '1.4' }],
+            '2xl': ['1.875rem', { lineHeight: '1.3' }],
+            '3xl': ['2.25rem', { lineHeight: '1.2' }],
+          },
+        }
+      }
+    }
+  </script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@700&display=swap" rel="stylesheet">
   <style>
-    * { font-family: 'Inter', sans-serif; }
-    .gradient-bg { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+    * { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+    .gradient-bg { background: linear-gradient(135deg, #7C3AED 0%, #6D28D9 100%); }
+    .logo { font-family: 'Space Grotesk', sans-serif; letter-spacing: -0.03em; }
+    .logo-dot { 
+      display: inline-block;
+      width: 0.35em;
+      height: 0.35em;
+      background: currentColor;
+      border-radius: 50%;
+      margin-left: 0.05em;
+      vertical-align: baseline;
+      position: relative;
+      top: -0.1em;
+    }
+    /* Ensure minimum touch targets */
+    button, a, input, textarea { min-height: 48px; }
+    /* Better focus states */
+    :focus-visible { outline: 2px solid #7C3AED; outline-offset: 2px; }
+    input:focus, textarea:focus { outline: none; }
   </style>
 </head>
-<body class="min-h-screen gradient-bg flex items-center justify-center p-4">
-  <div class="w-full max-w-lg">
-    <div class="bg-white rounded-2xl shadow-2xl p-6 sm:p-8">
-      <div class="text-center mb-6">
-        <h1 class="text-2xl sm:text-3xl font-bold text-gray-900">needasite</h1>
-        <p class="text-gray-500 mt-1">Describe it. We'll build it.</p>
-      </div>
-
-      <form id="form" class="space-y-4">
-        <textarea
-          id="prompt"
-          rows="4"
-          placeholder="A portfolio website for a photographer named Alex who specializes in landscape photography..."
-          class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none"
-          required
-        ></textarea>
-        <button type="submit" id="btn" class="w-full py-3 bg-purple-600 hover:bg-purple-700 text-white font-semibold rounded-xl transition disabled:opacity-50">
-          Build My Site
-        </button>
-      </form>
-
-      <div id="loading" class="hidden flex-col items-center py-8">
-        <div class="w-12 h-12 border-4 border-purple-200 border-t-purple-600 rounded-full animate-spin mb-4"></div>
-        <p class="text-gray-600">Building your site...</p>
-        <p class="text-gray-400 text-sm mt-1">~15 seconds</p>
-      </div>
-
-      <div id="result" class="hidden mt-6">
-        <div class="flex items-center gap-2 mb-3 text-green-700">
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-          <span class="font-semibold">Your site is ready!</span>
+<body class="min-h-screen bg-gray-50 text-gray-700">
+  
+  <!-- Initial Build Screen -->
+  <div id="buildScreen" class="min-h-screen gradient-bg flex items-center justify-center p-4">
+    <div class="w-full max-w-lg">
+      <div class="bg-white rounded-2xl shadow-xl p-8 sm:p-10">
+        <div class="text-center mb-8">
+          <h1 class="text-4xl font-bold text-gray-900 logo">needasite<span class="logo-dot"></span></h1>
+          <p class="text-gray-500 mt-3 text-lg">Tell us what you want. We'll build it.</p>
         </div>
-        <div class="flex gap-2">
-          <button id="viewBtn" class="flex-1 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg">View Site</button>
-          <button id="downloadBtn" class="flex-1 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg">Download</button>
-          <button id="newBtn" class="py-2 px-3 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg">New</button>
+
+        <form id="buildForm" class="space-y-5">
+          <textarea
+            id="initialPrompt"
+            rows="4"
+            placeholder="A website for my bakery called Sweet Dreams..."
+            class="w-full px-4 py-4 text-lg border-2 border-gray-200 rounded-2xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 resize-none"
+            required
+          >A portfolio website for a photographer named Alex who specializes in landscape photography</textarea>
+          <button type="submit" class="w-full py-4 bg-purple-600 hover:bg-purple-700 text-white text-lg font-semibold rounded-xl transition shadow-sm">
+            Continue
+          </button>
+        </form>
+
+        <div id="followUpSection" class="hidden space-y-5">
+          <div id="followUpQuestion" class="p-5 bg-purple-50 rounded-2xl text-gray-700 text-lg"></div>
+          <textarea id="followUpAnswer" rows="3" placeholder="Your answer..."
+            class="w-full px-4 py-4 text-lg border-2 border-gray-200 rounded-2xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 resize-none"></textarea>
+          <div class="flex gap-3">
+            <button id="skipFollowUp" class="flex-1 py-4 bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium rounded-xl transition">Skip</button>
+            <button id="submitFollowUp" class="flex-1 py-4 bg-purple-600 hover:bg-purple-700 text-white font-semibold rounded-xl transition shadow-sm">Build My Site</button>
+          </div>
+        </div>
+
+        <div id="buildLoading" class="hidden flex-col items-center py-10">
+          <div class="w-14 h-14 border-4 border-purple-200 border-t-purple-600 rounded-full animate-spin mb-5"></div>
+          <p id="loadingText" class="text-gray-600 text-lg">Building your site...</p>
+        </div>
+
+        <div id="buildError" class="hidden mt-6 p-5 bg-red-50 rounded-2xl text-red-700">
+          <p class="font-medium mb-1">Something went wrong</p>
+          <p id="buildErrorMsg" class="text-red-600"></p>
+          <button onclick="resetBuild()" class="mt-3 text-purple-600 font-medium hover:underline">Try again</button>
+        </div>
+      </div>
+      <p class="text-center text-white/70 mt-8">Powered by AI</p>
+    </div>
+  </div>
+
+  <!-- Editor Screen -->
+  <div id="editorScreen" class="hidden min-h-screen flex flex-col">
+    
+    <!-- Top Bar -->
+    <div class="bg-white border-b border-gray-200 px-4 py-3 flex items-center justify-between">
+      <h1 class="text-xl font-bold text-gray-900 logo">needasite<span class="logo-dot"></span></h1>
+      <button id="publishBtn" class="flex items-center gap-2 px-5 py-2.5 bg-purple-600 text-white rounded-xl font-medium hover:bg-purple-700 shadow-sm transition">
+        <i data-lucide="upload" class="w-5 h-5"></i> Publish
+      </button>
+    </div>
+
+    <!-- Mobile Tab Bar -->
+    <div class="lg:hidden flex border-b border-gray-200 bg-white">
+      <button id="tabChat" class="flex-1 py-4 flex items-center justify-center gap-2 text-lg font-medium text-purple-600 border-b-2 border-purple-600">
+        <i data-lucide="message-circle" class="w-5 h-5"></i> Chat
+      </button>
+      <button id="tabPreview" class="flex-1 py-4 flex items-center justify-center gap-2 text-lg font-medium text-gray-500 border-b-2 border-transparent">
+        <i data-lucide="eye" class="w-5 h-5"></i> Preview
+      </button>
+    </div>
+
+    <!-- Main Content -->
+    <div class="flex-1 flex flex-col lg:flex-row overflow-hidden">
+      <div id="chatPanel" class="flex-1 flex flex-col bg-gray-50 lg:max-w-md lg:border-r">
+        <div id="messages" class="flex-1 overflow-y-auto p-4 space-y-4"></div>
+        <div class="p-4 bg-white border-t border-gray-200">
+          <form id="chatForm" class="flex gap-3">
+            <input type="text" id="chatInput" placeholder="Change the colors..."
+              class="flex-1 px-4 py-3 text-lg border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500">
+            <button type="submit" class="px-5 py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-xl font-medium shadow-sm transition">Send</button>
+          </form>
         </div>
       </div>
 
-      <div id="error" class="hidden mt-6 p-4 bg-red-50 rounded-xl text-red-700">
-        <span id="errorMsg"></span>
+      <div id="previewPanel" class="hidden lg:flex flex-1 flex-col bg-white">
+        <iframe id="previewFrame" class="flex-1 border-0"></iframe>
       </div>
     </div>
-    <p class="text-center text-white/60 text-sm mt-6">Demo - Powered by Gemini</p>
+  </div>
+
+  <!-- Publish Modal -->
+  <div id="publishModal" class="hidden fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-md">
+      <h2 class="text-2xl font-bold text-gray-900 mb-2">Put Your Site Online</h2>
+      <p class="text-gray-500 text-lg mb-6">Enter your email. We'll send you the link.</p>
+      
+      <form id="publishForm" class="space-y-5">
+        <input type="email" id="publishEmail" placeholder="you@example.com" required
+          class="w-full px-4 py-4 text-lg border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500">
+        <div class="flex gap-3">
+          <button type="button" id="cancelPublish" class="flex-1 py-4 bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium rounded-xl transition">Cancel</button>
+          <button type="submit" class="flex-1 py-4 bg-purple-600 hover:bg-purple-700 text-white font-semibold rounded-xl transition shadow-sm">Publish</button>
+        </div>
+      </form>
+      
+      <div id="publishSuccess" class="hidden text-center py-6">
+        <div class="flex justify-center mb-4 text-success">
+          <i data-lucide="check-circle" class="w-16 h-16"></i>
+        </div>
+        <p class="text-xl font-semibold text-gray-900 mb-3">Your site is live!</p>
+        <a id="publishedUrl" href="#" target="_blank" class="text-lg text-purple-600 hover:text-purple-700 break-all font-medium"></a>
+        <button onclick="closePublishModal()" class="mt-6 w-full py-4 bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium rounded-xl transition">Done</button>
+      </div>
+    </div>
   </div>
 
   <script>
     const GEMINI_KEY = 'AIzaSyCt6kF7rVw--3CzfmmAuyTVYYzaNwrrKWY';
-    const API = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent';
-    let generatedHtml = '';
+    const GEMINI_API = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent';
+    
+    // Feature flag - set to true to enable AI image generation
+    const USE_AI_IMAGES = false;
+    const IMAGEN_API = 'https://generativelanguage.googleapis.com/v1beta/models/imagen-4.0-fast-generate-001:predict';
+    
+    let currentHtml = '';
+    let userPrompt = '';
+    let followUpContext = '';
+    let isDesktop = window.innerWidth >= 1024;
 
-    const form = document.getElementById('form');
-    const prompt = document.getElementById('prompt');
-    const btn = document.getElementById('btn');
-    const loading = document.getElementById('loading');
-    const result = document.getElementById('result');
-    const error = document.getElementById('error');
+    // Elements
+    const buildScreen = document.getElementById('buildScreen');
+    const editorScreen = document.getElementById('editorScreen');
+    const buildForm = document.getElementById('buildForm');
+    const followUpSection = document.getElementById('followUpSection');
+    const buildLoading = document.getElementById('buildLoading');
+    const loadingText = document.getElementById('loadingText');
+    const chatForm = document.getElementById('chatForm');
+    const chatInput = document.getElementById('chatInput');
+    const messages = document.getElementById('messages');
+    const previewFrame = document.getElementById('previewFrame');
+    const previewPanel = document.getElementById('previewPanel');
+    const chatPanel = document.getElementById('chatPanel');
+    const tabChat = document.getElementById('tabChat');
+    const tabPreview = document.getElementById('tabPreview');
 
-    function showLoading() {
-      form.classList.add('hidden');
-      loading.classList.remove('hidden');
-      loading.classList.add('flex');
-      result.classList.add('hidden');
-      error.classList.add('hidden');
+    // Tab switching
+    tabChat?.addEventListener('click', () => {
+      tabChat.classList.add('text-purple-600', 'border-purple-600');
+      tabChat.classList.remove('text-gray-500', 'border-transparent');
+      tabPreview.classList.remove('text-purple-600', 'border-purple-600');
+      tabPreview.classList.add('text-gray-500', 'border-transparent');
+      chatPanel.classList.remove('hidden');
+      previewPanel.classList.add('hidden');
+    });
+
+    tabPreview?.addEventListener('click', () => {
+      tabPreview.classList.add('text-purple-600', 'border-purple-600');
+      tabPreview.classList.remove('text-gray-500', 'border-transparent');
+      tabChat.classList.remove('text-purple-600', 'border-purple-600');
+      tabChat.classList.add('text-gray-500', 'border-transparent');
+      previewPanel.classList.remove('hidden');
+      previewPanel.classList.add('flex');
+      chatPanel.classList.add('hidden');
+    });
+
+    // Initial form submit
+    buildForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      userPrompt = document.getElementById('initialPrompt').value.trim();
+      if (userPrompt.length < 10) {
+        alert('Please provide a more detailed description');
+        return;
+      }
+      
+      buildForm.classList.add('hidden');
+      buildLoading.classList.remove('hidden');
+      buildLoading.classList.add('flex');
+      loadingText.textContent = 'Thinking...';
+      
+      try {
+        let question = null;
+        try {
+          question = await getFollowUpQuestion(userPrompt);
+        } catch (e) {
+          console.log('Follow-up skipped:', e);
+        }
+        
+        buildLoading.classList.add('hidden');
+        
+        if (question) {
+          document.getElementById('followUpQuestion').textContent = question;
+          followUpSection.classList.remove('hidden');
+        } else {
+          await buildSite();
+        }
+      } catch (err) {
+        showBuildError(err.message);
+      }
+    });
+
+    // Follow-up handlers
+    document.getElementById('submitFollowUp').addEventListener('click', async () => {
+      followUpContext = document.getElementById('followUpAnswer').value;
+      followUpSection.classList.add('hidden');
+      await buildSite();
+    });
+
+    document.getElementById('skipFollowUp').addEventListener('click', async () => {
+      followUpSection.classList.add('hidden');
+      await buildSite();
+    });
+
+    // Get follow-up question
+    async function getFollowUpQuestion(prompt) {
+      const sysPrompt = `A user wants to build a website: "${prompt}"
+
+Ask ONE short clarifying question about color scheme, style, or key features.
+If clear enough, respond: READY`;
+
+      const text = await callGemini(sysPrompt);
+      if (text.includes('READY') || text.length < 10) return null;
+      return text;
     }
 
-    function showResult() {
-      loading.classList.add('hidden');
-      result.classList.remove('hidden');
+    // Build the site
+    async function buildSite() {
+      buildLoading.classList.remove('hidden');
+      buildLoading.classList.add('flex');
+      loadingText.textContent = 'Building your site...';
+      
+      const fullPrompt = followUpContext 
+        ? `${userPrompt}\n\nAdditional details: ${followUpContext}`
+        : userPrompt;
+      
+      try {
+        currentHtml = await generateSite(fullPrompt);
+        
+        showEditor();
+        addMessage('user', userPrompt);
+        if (followUpContext) addMessage('user', followUpContext);
+        addMessage('assistant', '✨ Your site is ready! Switch to Preview to see it, or ask me to make changes.');
+        updatePreview();
+      } catch (err) {
+        showBuildError(err.message);
+      }
     }
 
-    function showError(msg) {
-      loading.classList.add('hidden');
-      error.classList.remove('hidden');
-      document.getElementById('errorMsg').textContent = msg;
-    }
-
-    function reset() {
-      form.classList.remove('hidden');
-      loading.classList.add('hidden');
-      result.classList.add('hidden');
-      error.classList.add('hidden');
-      prompt.value = '';
-    }
-
-    async function generate(userPrompt) {
+    // User's email (set after publish)
+    let publishedEmail = '';
+    
+    // Generate site HTML (using stock images)
+    async function generateSite(prompt) {
       const sysPrompt = `You are a professional web developer. Generate a COMPLETE, beautiful HTML5 website.
 
 REQUIREMENTS:
 - Valid HTML5 with <!DOCTYPE html>
 - Tailwind CSS via CDN: <script src="https://cdn.tailwindcss.com"><\/script>
+- Lucide icons via CDN: <script src="https://unpkg.com/lucide@latest"><\/script>
 - Inter font from Google Fonts
 - Mobile-first, fully responsive
 - Modern, clean design
-- Placeholder images from https://picsum.photos/
+- Use placeholder images from https://picsum.photos/ (e.g., https://picsum.photos/800/600)
 - Proper SEO meta tags
+- Current year: ${new Date().getFullYear()}
 
-USER REQUEST: ${userPrompt}
+MOBILE NAVIGATION (REQUIRED):
+Include a working hamburger menu for mobile. Use this exact pattern:
+<button id="menuBtn" class="lg:hidden">
+  <i data-lucide="menu" class="w-6 h-6"></i>
+</button>
+<nav id="mobileMenu" class="hidden lg:flex ...">
+  <!-- nav links -->
+</nav>
 
-OUTPUT: Generate ONLY the complete HTML file, no markdown or explanations.`;
+Add this script before </body>:
+<script>
+  lucide.createIcons();
+  const menuBtn = document.getElementById('menuBtn');
+  const mobileMenu = document.getElementById('mobileMenu');
+  if (menuBtn && mobileMenu) {
+    menuBtn.addEventListener('click', () => {
+      mobileMenu.classList.toggle('hidden');
+    });
+  }
+<\/script>
 
-      const res = await fetch(`${API}?key=${GEMINI_KEY}`, {
+CONTACT FORM:
+Include a contact form section with fields: name, email, message.
+Use this exact form structure:
+<form class="contact-form" data-needasite-form="true">
+  <input type="text" name="name" placeholder="Your Name" required class="...">
+  <input type="email" name="email" placeholder="Your Email" required class="...">
+  <textarea name="message" placeholder="Your Message" required class="..."></textarea>
+  <button type="submit" class="...">Send Message</button>
+</form>
+
+Style the form beautifully with Tailwind. The form will be handled by JavaScript.
+
+USER REQUEST: ${prompt}
+
+OUTPUT: Complete HTML only, no markdown or explanations.`;
+
+      return await callGemini(sysPrompt);
+    }
+
+    // Edit site
+    async function editSite(instruction, html) {
+      const sysPrompt = `Edit this website per user request.
+
+CURRENT HTML:
+${html}
+
+USER REQUEST: ${instruction}
+
+Current year: ${new Date().getFullYear()}.
+
+OUTPUT: Complete updated HTML only, no markdown.`;
+
+      return await callGemini(sysPrompt);
+    }
+
+    // Gemini API call
+    async function callGemini(prompt) {
+      const res = await fetch(`${GEMINI_API}?key=${GEMINI_KEY}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          contents: [{ parts: [{ text: sysPrompt }] }],
+          contents: [{ parts: [{ text: prompt }] }],
           generationConfig: { temperature: 0.7, maxOutputTokens: 8192 }
         })
       });
 
-      if (!res.ok) throw new Error('API error: ' + res.status);
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.error?.message || `API error: ${res.status}`);
+      }
+      
       const data = await res.json();
-      let html = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
-      
-      // Extract HTML from code blocks if present
-      const match = html.match(/```(?:html)?\s*([\s\S]*?)```/);
-      if (match) html = match[1];
-      
-      return html.trim();
+      let text = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+      const match = text.match(/```(?:html)?\s*([\s\S]*?)```/);
+      if (match) text = match[1];
+      return text.trim();
     }
 
-    form.addEventListener('submit', async (e) => {
+    // Chat handler
+    chatForm.addEventListener('submit', async (e) => {
       e.preventDefault();
-      showLoading();
+      const text = chatInput.value.trim();
+      if (!text) return;
+      
+      chatInput.value = '';
+      addMessage('user', text);
+      const thinkingId = addMessage('assistant', '🤔 Updating...');
+      
       try {
-        generatedHtml = await generate(prompt.value);
-        showResult();
+        currentHtml = await editSite(text, currentHtml);
+        updateMessage(thinkingId, '✅ Done! Check the Preview tab.');
+        updatePreview();
       } catch (err) {
-        showError(err.message);
+        updateMessage(thinkingId, '❌ ' + err.message);
       }
     });
 
-    document.getElementById('viewBtn').addEventListener('click', () => {
-      const win = window.open('', '_blank');
-      win.document.write(generatedHtml);
-      win.document.close();
+    // UI helpers
+    function showBuildError(msg) {
+      buildLoading.classList.add('hidden');
+      document.getElementById('buildError').classList.remove('hidden');
+      document.getElementById('buildErrorMsg').textContent = msg;
+    }
+
+    function resetBuild() {
+      buildForm.classList.remove('hidden');
+      buildLoading.classList.add('hidden');
+      document.getElementById('buildError').classList.add('hidden');
+      followUpSection.classList.add('hidden');
+    }
+
+    function showEditor() {
+      buildScreen.classList.add('hidden');
+      editorScreen.classList.remove('hidden');
+      editorScreen.classList.add('flex');
+      if (isDesktop) {
+        previewPanel.classList.remove('hidden');
+        previewPanel.classList.add('flex');
+      }
+    }
+
+    function addMessage(role, text) {
+      const id = 'msg-' + Date.now();
+      const div = document.createElement('div');
+      div.id = id;
+      div.className = role === 'user' 
+        ? 'ml-auto max-w-[85%] bg-purple-600 text-white px-5 py-3 text-lg rounded-2xl rounded-br-md'
+        : 'mr-auto max-w-[85%] bg-white border-2 border-gray-200 px-5 py-3 text-lg rounded-2xl rounded-bl-md shadow-sm';
+      div.textContent = text;
+      messages.appendChild(div);
+      messages.scrollTop = messages.scrollHeight;
+      return id;
+    }
+
+    function updateMessage(id, text) {
+      const el = document.getElementById(id);
+      if (el) el.textContent = text;
+    }
+
+    function updatePreview() {
+      // Inject form handling script into the HTML
+      const formHandlerScript = `
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const forms = document.querySelectorAll('[data-needasite-form]');
+  forms.forEach(form => {
+    form.addEventListener('submit', function(e) {
+      e.preventDefault();
+      const formData = new FormData(form);
+      const data = Object.fromEntries(formData.entries());
+      
+      // Send message to parent window
+      window.parent.postMessage({ type: 'formSubmit', data: data }, '*');
+      
+      // Show success message
+      form.innerHTML = '<div class="text-center py-8"><div class="text-4xl mb-2">✅</div><p class="text-lg font-semibold text-gray-900">Message sent!</p><p class="text-gray-500 mt-1">We\\'ll get back to you soon.</p></div>';
+    });
+  });
+});
+<\/script>`;
+      
+      // Insert script before </body>
+      let htmlWithHandler = currentHtml;
+      if (currentHtml.includes('</body>')) {
+        htmlWithHandler = currentHtml.replace('</body>', formHandlerScript + '</body>');
+      } else {
+        htmlWithHandler = currentHtml + formHandlerScript;
+      }
+      
+      previewFrame.srcdoc = htmlWithHandler;
+    }
+    
+    // Listen for form submissions from preview iframe
+    window.addEventListener('message', async (event) => {
+      if (event.data?.type === 'formSubmit') {
+        const formData = event.data.data;
+        console.log('Form submitted:', formData);
+        
+        if (publishedEmail) {
+          // Site is published - send to user's email
+          // TODO: Implement actual email sending via backend
+          console.log('Would send to:', publishedEmail, formData);
+          addMessage('assistant', `📬 New contact form submission from ${formData.name} (${formData.email})`);
+        }
+      }
     });
 
-    document.getElementById('downloadBtn').addEventListener('click', () => {
-      const blob = new Blob([generatedHtml], { type: 'text/html' });
-      const a = document.createElement('a');
-      a.href = URL.createObjectURL(blob);
-      a.download = 'my-site.html';
-      a.click();
+    // Publish modal
+    document.getElementById('publishBtn').addEventListener('click', () => {
+      document.getElementById('publishModal').classList.remove('hidden');
+      document.getElementById('publishForm').classList.remove('hidden');
+      document.getElementById('publishSuccess').classList.add('hidden');
     });
 
-    document.getElementById('newBtn').addEventListener('click', reset);
+    document.getElementById('cancelPublish').addEventListener('click', closePublishModal);
+
+    document.getElementById('publishForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const email = document.getElementById('publishEmail').value;
+      publishedEmail = email;
+      
+      // TODO: Actually publish the site to backend
+      // For now, simulate success
+      const siteId = Math.random().toString(36).substring(2, 10);
+      const url = `https://${siteId}.needasite.com`;
+      
+      document.getElementById('publishForm').classList.add('hidden');
+      document.getElementById('publishSuccess').classList.remove('hidden');
+      document.getElementById('publishedUrl').href = url;
+      document.getElementById('publishedUrl').textContent = url;
+      lucide.createIcons();
+      
+      // Update publish button to show published state
+      const publishBtn = document.getElementById('publishBtn');
+      publishBtn.innerHTML = '<i data-lucide="check" class="w-4 h-4"></i> Published';
+      publishBtn.classList.remove('bg-purple-600', 'hover:bg-purple-700');
+      publishBtn.classList.add('bg-green-600');
+      lucide.createIcons();
+      
+      addMessage('assistant', `🚀 Your site is published! Contact form submissions will be sent to ${email}`);
+      
+      console.log('Published:', { email, siteId, htmlLength: currentHtml.length });
+    });
+
+    function closePublishModal() {
+      document.getElementById('publishModal').classList.add('hidden');
+    }
+
+    // Resize handler
+    window.addEventListener('resize', () => {
+      isDesktop = window.innerWidth >= 1024;
+    });
+
+    // Initialize Lucide icons
+    lucide.createIcons();
+
+    // === AI IMAGE GENERATION (disabled for now) ===
+    async function generateImagesAI(descriptions) {
+      if (!USE_AI_IMAGES) return [];
+      
+      const results = [];
+      for (const desc of descriptions.slice(0, 3)) {
+        try {
+          const res = await fetch(`${IMAGEN_API}?key=${GEMINI_KEY}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              instances: [{ prompt: desc + '. High quality photography.' }],
+              parameters: { sampleCount: 1 }
+            })
+          });
+          const data = await res.json();
+          if (data.predictions?.[0]?.bytesBase64Encoded) {
+            results.push('data:image/png;base64,' + data.predictions[0].bytesBase64Encoded);
+          }
+        } catch (err) {
+          console.error('Image gen failed:', err);
+        }
+      }
+      return results;
+    }
   </script>
 </body>
 </html>
