@@ -878,48 +878,197 @@
     const GEMINI_KEY = 'AIzaSyCt6kF7rVw--3CzfmmAuyTVYYzaNwrrKWY';
     const GEMINI_API = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent';
     
-    let currentHtml = '', userPrompt = '', followUpCtx = '', pubEmail = '';
+    let currentHtml = '', currentConfig = null, userPrompt = '', followUpCtx = '', pubEmail = '';
+    
+    // ============ TEMPLATE SYSTEM ============
+    const T = {
+      base: (c, html) => `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>${c.title || 'My Website'}</title>
+  <meta name="description" content="${c.description || ''}">
+  <script src="https://cdn.tailwindcss.com"><\/script>
+  <script>tailwind.config={theme:{extend:{colors:{primary:'${c.primaryColor||'#3B82F6'}',secondary:'${c.secondaryColor||'#1F2937'}'},fontFamily:{sans:['Inter','system-ui','sans-serif']}}}}<\/script>
+  <script src="https://unpkg.com/lucide@latest"><\/script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>*{font-family:'Inter',system-ui,sans-serif}</style>
+</head>
+<body class="bg-white text-gray-900">
+${html}
+<script>
+lucide.createIcons();
+document.getElementById('menuBtn')?.addEventListener('click',()=>document.getElementById('mobileMenu')?.classList.toggle('hidden'));
+document.querySelectorAll('[data-needasite-form]').forEach(f=>f.addEventListener('submit',e=>{e.preventDefault();f.innerHTML='<div class="text-center py-8"><p class="text-xl font-semibold text-green-600">✓ Message sent!</p><p class="text-gray-500 mt-2">We\\'ll get back to you soon.</p></div>';}));
+<\/script>
+</body>
+</html>`,
+
+      nav: (d) => `<header class="bg-white border-b border-gray-100 sticky top-0 z-50">
+  <nav class="container mx-auto px-4 lg:px-8">
+    <div class="flex items-center justify-between h-16 lg:h-20">
+      <a href="#" class="text-xl lg:text-2xl font-bold text-gray-900">${d.logo||'Brand'}</a>
+      <button id="menuBtn" class="lg:hidden p-2"><i data-lucide="menu" class="w-6 h-6"></i></button>
+      <div id="mobileMenu" class="hidden lg:flex items-center gap-8">
+        ${(d.links||['Home','About','Services','Contact']).map(l=>`<a href="#${l.toLowerCase()}" class="text-gray-600 hover:text-primary font-medium">${l}</a>`).join('')}
+        ${d.cta?`<a href="#contact" class="px-5 py-2.5 bg-primary text-white rounded-lg font-medium hover:opacity-90">${d.cta}</a>`:''}
+      </div>
+    </div>
+  </nav>
+</header>`,
+
+      hero: (d) => `<section id="home" class="bg-gradient-to-br from-gray-50 to-white">
+  <div class="container mx-auto px-4 lg:px-8 py-16 lg:py-24">
+    <div class="grid lg:grid-cols-2 gap-12 items-center">
+      <div class="space-y-6">
+        <h1 class="text-4xl lg:text-5xl xl:text-6xl font-bold text-gray-900 leading-tight">${d.headline||'Welcome'}</h1>
+        <p class="text-lg lg:text-xl text-gray-600">${d.subheadline||'We help you achieve your goals.'}</p>
+        <div class="flex flex-wrap gap-4">
+          <a href="#contact" class="px-6 py-3 bg-primary text-white rounded-lg font-semibold hover:opacity-90 shadow-lg shadow-primary/25">${d.ctaPrimary||'Get Started'}</a>
+          ${d.ctaSecondary?`<a href="#about" class="px-6 py-3 bg-gray-100 text-gray-700 rounded-lg font-semibold hover:bg-gray-200">${d.ctaSecondary}</a>`:''}
+        </div>
+      </div>
+      <div><img src="https://picsum.photos/seed/${d.imageSeed||'hero'}/800/600" alt="Hero" class="w-full rounded-2xl shadow-2xl"></div>
+    </div>
+  </div>
+</section>`,
+
+      features: (d) => `<section id="services" class="py-16 lg:py-24 ${d.dark?'bg-gray-900 text-white':'bg-white'}">
+  <div class="container mx-auto px-4 lg:px-8">
+    <div class="text-center max-w-3xl mx-auto mb-12 lg:mb-16">
+      <h2 class="text-3xl lg:text-4xl font-bold mb-4">${d.title||'Our Services'}</h2>
+      <p class="${d.dark?'text-gray-400':'text-gray-600'} text-lg">${d.subtitle||'What we offer'}</p>
+    </div>
+    <div class="grid md:grid-cols-2 lg:grid-cols-${d.columns||3} gap-8">
+      ${(d.items||[{icon:'star',title:'Quality',desc:'Exceptional quality in everything.'},{icon:'zap',title:'Fast',desc:'Quick turnaround times.'},{icon:'shield',title:'Reliable',desc:'Support when you need it.'}]).map(i=>`
+        <div class="p-6 lg:p-8 rounded-2xl ${d.dark?'bg-gray-800':'bg-gray-50'} hover:shadow-lg transition">
+          <div class="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center mb-4"><i data-lucide="${i.icon||'star'}" class="w-6 h-6 text-primary"></i></div>
+          <h3 class="text-xl font-semibold mb-2">${i.title}</h3>
+          <p class="${d.dark?'text-gray-400':'text-gray-600'}">${i.desc}</p>
+        </div>`).join('')}
+    </div>
+  </div>
+</section>`,
+
+      about: (d) => `<section id="about" class="py-16 lg:py-24 bg-gray-50">
+  <div class="container mx-auto px-4 lg:px-8">
+    <div class="grid lg:grid-cols-2 gap-12 items-center">
+      <div><img src="https://picsum.photos/seed/${d.imageSeed||'about'}/800/600" alt="About" class="w-full rounded-2xl shadow-xl"></div>
+      <div class="space-y-6">
+        <h2 class="text-3xl lg:text-4xl font-bold">${d.title||'About Us'}</h2>
+        <p class="text-gray-600 text-lg leading-relaxed">${d.description||'We are passionate about delivering excellence.'}</p>
+        ${d.stats?`<div class="grid grid-cols-3 gap-6 pt-4">${d.stats.map(s=>`<div><div class="text-3xl font-bold text-primary">${s.value}</div><div class="text-gray-500 text-sm">${s.label}</div></div>`).join('')}</div>`:''}
+      </div>
+    </div>
+  </div>
+</section>`,
+
+      gallery: (d) => `<section id="gallery" class="py-16 lg:py-24 bg-white">
+  <div class="container mx-auto px-4 lg:px-8">
+    <div class="text-center max-w-3xl mx-auto mb-12">
+      <h2 class="text-3xl lg:text-4xl font-bold mb-4">${d.title||'Our Work'}</h2>
+      <p class="text-gray-600 text-lg">${d.subtitle||'Recent projects'}</p>
+    </div>
+    <div class="grid grid-cols-2 lg:grid-cols-${d.columns||3} gap-4 lg:gap-6">
+      ${(d.images||['w1','w2','w3','w4','w5','w6']).map((img,i)=>`<div class="aspect-square overflow-hidden rounded-xl group"><img src="https://picsum.photos/seed/${img}/600/600" alt="Work ${i+1}" class="w-full h-full object-cover group-hover:scale-105 transition duration-300"></div>`).join('')}
+    </div>
+  </div>
+</section>`,
+
+      testimonials: (d) => `<section class="py-16 lg:py-24 bg-gray-50">
+  <div class="container mx-auto px-4 lg:px-8">
+    <div class="text-center max-w-3xl mx-auto mb-12">
+      <h2 class="text-3xl lg:text-4xl font-bold mb-4">${d.title||'Testimonials'}</h2>
+    </div>
+    <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+      ${(d.items||[{quote:'Amazing service!',name:'Sarah J.',role:'CEO'},{quote:'Highly recommend.',name:'Mike C.',role:'Founder'},{quote:'Outstanding quality.',name:'Emily D.',role:'Director'}]).map(i=>`
+        <div class="bg-white p-6 lg:p-8 rounded-2xl shadow-sm">
+          <div class="flex gap-1 mb-4">${'★★★★★'.split('').map(()=>'<span class="text-yellow-400">★</span>').join('')}</div>
+          <p class="text-gray-600 mb-6">"${i.quote}"</p>
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center"><span class="text-primary font-semibold">${i.name.charAt(0)}</span></div>
+            <div><div class="font-semibold">${i.name}</div><div class="text-gray-500 text-sm">${i.role}</div></div>
+          </div>
+        </div>`).join('')}
+    </div>
+  </div>
+</section>`,
+
+      contact: (d) => `<section id="contact" class="py-16 lg:py-24 bg-white">
+  <div class="container mx-auto px-4 lg:px-8">
+    <div class="max-w-2xl mx-auto">
+      <div class="text-center mb-12">
+        <h2 class="text-3xl lg:text-4xl font-bold mb-4">${d.title||'Get In Touch'}</h2>
+        <p class="text-gray-600 text-lg">${d.subtitle||'We\\'d love to hear from you.'}</p>
+      </div>
+      <form data-needasite-form="true" class="space-y-6">
+        <div class="grid md:grid-cols-2 gap-6">
+          <input type="text" name="name" placeholder="Your Name" required class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent outline-none">
+          <input type="email" name="email" placeholder="Your Email" required class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent outline-none">
+        </div>
+        <textarea name="message" rows="5" placeholder="Your Message" required class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent outline-none resize-none"></textarea>
+        <button type="submit" class="w-full py-4 bg-primary text-white rounded-xl font-semibold hover:opacity-90 shadow-lg shadow-primary/25">${d.buttonText||'Send Message'}</button>
+      </form>
+    </div>
+  </div>
+</section>`,
+
+      cta: (d) => `<section class="py-16 lg:py-20 bg-primary">
+  <div class="container mx-auto px-4 lg:px-8 text-center">
+    <h2 class="text-3xl lg:text-4xl font-bold text-white mb-4">${d.title||'Ready to Start?'}</h2>
+    <p class="text-white/80 text-lg mb-8 max-w-2xl mx-auto">${d.subtitle||'Join us today.'}</p>
+    <a href="#contact" class="inline-block px-8 py-4 bg-white text-primary rounded-xl font-semibold hover:bg-gray-100 shadow-lg">${d.buttonText||'Contact Us'}</a>
+  </div>
+</section>`,
+
+      footer: (d) => `<footer class="bg-gray-900 text-white py-12 lg:py-16">
+  <div class="container mx-auto px-4 lg:px-8">
+    <div class="grid md:grid-cols-4 gap-8 mb-12">
+      <div>
+        <div class="text-xl font-bold mb-4">${d.logo||'Brand'}</div>
+        <p class="text-gray-400">${d.description||'Building amazing experiences.'}</p>
+      </div>
+      <div><div class="font-semibold mb-4">Links</div><div class="space-y-2">${['Home','About','Services','Contact'].map(l=>`<a href="#${l.toLowerCase()}" class="block text-gray-400 hover:text-white">${l}</a>`).join('')}</div></div>
+      <div><div class="font-semibold mb-4">Legal</div><div class="space-y-2"><a href="#" class="block text-gray-400 hover:text-white">Privacy</a><a href="#" class="block text-gray-400 hover:text-white">Terms</a></div></div>
+      <div><div class="font-semibold mb-4">Contact</div><div class="space-y-2 text-gray-400">${d.email?`<p>${d.email}</p>`:''}${d.phone?`<p>${d.phone}</p>`:''}</div></div>
+    </div>
+    <div class="pt-8 border-t border-gray-800 text-center text-gray-500">
+      <p>© ${new Date().getFullYear()} ${d.logo||'Brand'}. All rights reserved.</p>
+    </div>
+  </div>
+</footer>`
+    };
+
+    function renderSite(config) {
+      const sections = (config.sections||[]).map(s => T[s.type] ? T[s.type](s) : '').join('\n');
+      return T.base(config, sections);
+    }
+    // ============ END TEMPLATES ============
     
     lucide.createIcons();
-    
     const $ = id => document.getElementById(id);
     
     $('buildForm').addEventListener('submit', async e => {
       e.preventDefault();
       userPrompt = $('initialPrompt').value.trim();
       if (userPrompt.length < 10) return alert('Add more detail');
-      
       $('buildForm').style.display = 'none';
       $('loading').classList.add('visible');
       $('loadingText').textContent = 'Thinking...';
-      
       try {
         const q = await getFollowUp(userPrompt);
         $('loading').classList.remove('visible');
-        if (q) {
-          $('followUpQ').textContent = q;
-          $('followUp').classList.add('visible');
-        } else {
-          await buildSite();
-        }
-      } catch (err) {
-        showError(err.message);
-      }
+        if (q) { $('followUpQ').textContent = q; $('followUp').classList.add('visible'); }
+        else { await buildSite(); }
+      } catch (err) { showError(err.message); }
     });
     
-    $('buildBtn').onclick = async () => {
-      followUpCtx = $('followUpA').value;
-      $('followUp').classList.remove('visible');
-      await buildSite();
-    };
-    
-    $('skipBtn').onclick = async () => {
-      $('followUp').classList.remove('visible');
-      await buildSite();
-    };
+    $('buildBtn').onclick = async () => { followUpCtx = $('followUpA').value; $('followUp').classList.remove('visible'); await buildSite(); };
+    $('skipBtn').onclick = async () => { $('followUp').classList.remove('visible'); await buildSite(); };
     
     async function getFollowUp(p) {
-      const t = await callGemini(`User wants: "${p}"\n\nAsk ONE short question about style/features. If clear, respond: READY`);
+      const t = await callGemini(`User wants: "${p}"\n\nAsk ONE short question about style/colors. If clear, respond: READY`);
       return t.includes('READY') || t.length < 10 ? null : t;
     }
     
@@ -928,97 +1077,79 @@
       $('loadingText').textContent = 'Building...';
       const full = followUpCtx ? `${userPrompt}\n\n${followUpCtx}` : userPrompt;
       try {
-        currentHtml = await genSite(full);
+        currentConfig = await genSiteConfig(full);
+        currentHtml = renderSite(currentConfig);
         showEditor();
         addMsg('user', userPrompt);
         if (followUpCtx) addMsg('user', followUpCtx);
         addMsg('assistant', 'Your site is ready! Tap Preview to see it.');
         updatePreview();
-      } catch (err) {
-        showError(err.message);
-      }
+      } catch (err) { showError(err.message); }
     }
     
-    async function genSite(p) {
-      const prompt = `You are a professional web developer. Generate a COMPLETE, beautiful HTML5 website.
+    async function genSiteConfig(prompt) {
+      const sysPrompt = `You are a website planner. Based on the user's request, output ONLY valid JSON (no markdown, no explanation).
 
-REQUIREMENTS:
-- Valid HTML5 with <!DOCTYPE html>
-- Include in <head>:
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://unpkg.com/lucide@latest"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-- Mobile-first, fully responsive design
-- Modern, clean, professional look
-- Use Tailwind CSS classes for ALL styling
-- Use placeholder images from https://picsum.photos/800/600
-- Current year: ${new Date().getFullYear()}
+AVAILABLE SECTIONS: nav, hero, features, about, gallery, testimonials, contact, cta, footer
 
-MOBILE NAVIGATION (REQUIRED):
-<header class="...">
-  <nav class="container mx-auto px-4 py-4 flex justify-between items-center">
-    <a href="#" class="text-xl font-bold">Logo</a>
-    <button id="menuBtn" class="lg:hidden">
-      <i data-lucide="menu" class="w-6 h-6"></i>
-    </button>
-    <div id="mobileMenu" class="hidden lg:flex gap-6">
-      <a href="#" class="hover:text-blue-500">Link</a>
-    </div>
-  </nav>
-</header>
+OUTPUT THIS JSON STRUCTURE:
+{
+  "title": "Page Title",
+  "description": "Meta description",
+  "primaryColor": "#HEX",
+  "sections": [
+    { "type": "nav", "logo": "Brand Name", "links": ["Home", "About", "Services", "Contact"], "cta": "Get Started" },
+    { "type": "hero", "headline": "...", "subheadline": "...", "ctaPrimary": "...", "imageSeed": "unique-word" },
+    { "type": "features", "title": "...", "subtitle": "...", "items": [{"icon": "lucide-icon-name", "title": "...", "desc": "..."}] },
+    { "type": "about", "title": "...", "description": "...", "imageSeed": "unique-word", "stats": [{"value": "100+", "label": "Clients"}] },
+    { "type": "gallery", "title": "...", "images": ["seed1", "seed2", "seed3", "seed4", "seed5", "seed6"] },
+    { "type": "testimonials", "items": [{"quote": "...", "name": "...", "role": "..."}] },
+    { "type": "contact", "title": "...", "subtitle": "..." },
+    { "type": "cta", "title": "...", "subtitle": "...", "buttonText": "..." },
+    { "type": "footer", "logo": "Brand", "description": "...", "email": "...", "phone": "..." }
+  ]
+}
 
-Add before </body>:
-<script>
-  lucide.createIcons();
-  document.getElementById('menuBtn')?.addEventListener('click', () => {
-    document.getElementById('mobileMenu').classList.toggle('hidden');
-  });
-</script>
+ICON OPTIONS: star, zap, shield, heart, award, check, clock, users, target, globe, camera, palette, music, book, coffee, home, mail, phone, map-pin, briefcase, code, layers, settings, truck, gift, sun, moon
 
-CONTACT FORM (include in a section):
-<form data-needasite-form="true" class="space-y-4">
-  <input type="text" name="name" placeholder="Your Name" required class="w-full px-4 py-3 border rounded-lg">
-  <input type="email" name="email" placeholder="Your Email" required class="w-full px-4 py-3 border rounded-lg">
-  <textarea name="message" placeholder="Your Message" required class="w-full px-4 py-3 border rounded-lg"></textarea>
-  <button type="submit" class="w-full py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700">Send</button>
-</form>
+Pick appropriate sections for the request. Include at least: nav, hero, contact, footer.
 
-USER REQUEST: ${p}
+USER REQUEST: ${prompt}
 
-OUTPUT: Complete HTML document only. No markdown, no explanations, no code blocks.`;
-      return await callGemini(prompt);
+OUTPUT: Valid JSON only.`;
+
+      const text = await callGemini(sysPrompt);
+      // Extract JSON from response
+      let json = text;
+      const jsonMatch = text.match(/\{[\s\S]*\}/);
+      if (jsonMatch) json = jsonMatch[0];
+      return JSON.parse(json);
     }
     
-    async function editSite(i, h) {
-      const prompt = `Edit this website according to the user's request.
+    async function editSiteConfig(instruction) {
+      const sysPrompt = `Current site config:
+${JSON.stringify(currentConfig, null, 2)}
 
-CURRENT HTML:
-${h}
+User wants to: ${instruction}
 
-USER REQUEST: ${i}
-
-RULES:
-- Keep all existing structure and functionality
-- Keep Tailwind CSS, Lucide icons, and Inter font
-- Keep the mobile menu JavaScript
-- Keep data-needasite-form on contact forms
-- Only change what the user asked for
-
-OUTPUT: Complete updated HTML document only. No markdown, no explanations.`;
-      return await callGemini(prompt);
+Update the config and output ONLY the complete updated JSON. Keep structure, only change what's requested.`;
+      
+      const text = await callGemini(sysPrompt);
+      let json = text;
+      const jsonMatch = text.match(/\{[\s\S]*\}/);
+      if (jsonMatch) json = jsonMatch[0];
+      return JSON.parse(json);
     }
     
     async function callGemini(p) {
       const r = await fetch(`${GEMINI_API}?key=${GEMINI_KEY}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ contents: [{ parts: [{ text: p }] }], generationConfig: { temperature: 0.7, maxOutputTokens: 8192 } })
+        body: JSON.stringify({ contents: [{ parts: [{ text: p }] }], generationConfig: { temperature: 0.7, maxOutputTokens: 4096 } })
       });
       if (!r.ok) { const e = await r.json().catch(() => ({})); throw new Error(e.error?.message || `Error ${r.status}`); }
       const d = await r.json();
-      let t = d.candidates?.[0]?.content?.parts?.[0]?.text || '';
-      const m = t.match(/```(?:html)?\s*([\s\S]*?)```/);
-      return (m ? m[1] : t).trim();
+      return d.candidates?.[0]?.content?.parts?.[0]?.text || '';
     }
     
     function showError(m) {
@@ -1047,12 +1178,11 @@ OUTPUT: Complete updated HTML document only. No markdown, no explanations.`;
       addMsg('user', t);
       const id = addMsg('assistant', 'Updating...');
       try {
-        currentHtml = await editSite(t, currentHtml);
+        currentConfig = await editSiteConfig(t);
+        currentHtml = renderSite(currentConfig);
         updMsg(id, 'Done! Check Preview.');
         updatePreview();
-      } catch (err) {
-        updMsg(id, 'Error: ' + err.message);
-      }
+      } catch (err) { updMsg(id, 'Error: ' + err.message); }
     });
     
     function addMsg(r, t) {
