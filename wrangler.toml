@@ -1,0 +1,19 @@
+name = "needasite"
+main = "src/index.ts"
+compatibility_date = "2024-01-01"
+
+# KV namespace for storing generated sites
+[[kv_namespaces]]
+binding = "SITES"
+id = "placeholder-sites-kv-id"
+
+# Environment variables (set via wrangler secret)
+# GEMINI_API_KEY = "..."
+
+[vars]
+ENVIRONMENT = "production"
+
+# Dev settings
+[dev]
+port = 8787
+local_protocol = "http"
