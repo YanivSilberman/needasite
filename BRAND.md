@@ -117,7 +117,17 @@ Our grays have a slight warm undertone—never cold or clinical.
 
 ### Typography
 
-#### Font Family: Inter
+#### Logo Font: Space Grotesk
+- Geometric with personality
+- Distinctive letterforms (unique 'a', 'e', 's')
+- Tech-forward but approachable
+- Used only for the wordmark/logo
+
+```css
+font-family: 'Space Grotesk', sans-serif;
+```
+
+#### Body Font: Inter
 - Clean, highly legible, excellent at all sizes
 - Strong differentiation between similar letters (1, l, I)
 - Open apertures for readability
@@ -196,19 +206,25 @@ box-shadow: 0 10px 25px rgba(28, 25, 23, 0.1), 0 4px 10px rgba(28, 25, 23, 0.05)
 ## Logo
 
 ### Concept
-The needasite logo is typographic—just the wordmark. No abstract symbols that need explaining.
+The needasite logo is typographic—just the wordmark with a distinctive dot. No abstract symbols that need explaining.
 
-**Wordmark:** "needasite" in lowercase Inter Bold
+**Wordmark:** "needasite." in lowercase Space Grotesk Bold
 - Lowercase feels friendly and approachable
 - No spaces, reads as one simple unit
 - The word itself explains what we do
+- Trailing dot adds a confident, complete feeling
 
 ### Logo Specifications
 
 ```
-Font: Inter Bold (700)
-Tracking: -0.02em (slightly tighter)
+Font: Space Grotesk Bold (700)
+Tracking: -0.03em (tighter for logo feel)
 Color: Purple 600 (#7C3AED) or Gray 900 (#1C1917)
+
+The dot:
+- Circular, 0.35em diameter
+- Same color as text
+- Positioned at baseline
 ```
 
 ### Usage Rules
