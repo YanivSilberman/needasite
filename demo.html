@@ -167,7 +167,12 @@
     // Step 1: Get initial prompt and ask follow-up
     buildForm.addEventListener('submit', async (e) => {
       e.preventDefault();
-      userPrompt = document.getElementById('initialPrompt').value;
+      userPrompt = document.getElementById('initialPrompt').value.trim();
+      
+      if (userPrompt.length < 10) {
+        alert('Please provide a more detailed description (at least 10 characters)');
+        return;
+      }
       
       buildForm.classList.add('hidden');
       buildLoading.classList.remove('hidden');
@@ -175,7 +180,13 @@
       loadingText.textContent = 'Thinking...';
       
       try {
-        const question = await getFollowUpQuestion(userPrompt);
+        let question = null;
+        try {
+          question = await getFollowUpQuestion(userPrompt);
+        } catch (e) {
+          console.log('Follow-up question failed, proceeding to build:', e);
+        }
+        
         buildLoading.classList.add('hidden');
         
         if (question) {
@@ -363,7 +374,12 @@ OUTPUT: Complete updated HTML only, no markdown.`;
         })
       });
 
-      if (!res.ok) throw new Error('API error: ' + res.status);
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        const errMsg = errData.error?.message || `API error: ${res.status}`;
+        console.error('Gemini error:', errData);
+        throw new Error(errMsg);
+      }
       const data = await res.json();
       let text = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
       
