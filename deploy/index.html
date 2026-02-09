@@ -1078,13 +1078,19 @@ document.querySelectorAll('[data-needasite-form]').forEach(f=>f.addEventListener
       const full = followUpCtx ? `${userPrompt}\n\n${followUpCtx}` : userPrompt;
       try {
         currentConfig = await genSiteConfig(full);
+        if (!currentConfig || !currentConfig.sections) {
+          throw new Error('Invalid config: missing sections');
+        }
         currentHtml = renderSite(currentConfig);
         showEditor();
         addMsg('user', userPrompt);
         if (followUpCtx) addMsg('user', followUpCtx);
         addMsg('assistant', 'Your site is ready! Tap Preview to see it.');
         updatePreview();
-      } catch (err) { showError(err.message); }
+      } catch (err) { 
+        console.error('Build error:', err);
+        showError(err.message || 'Failed to build site'); 
+      }
     }
     
     async function genSiteConfig(prompt) {
@@ -1119,11 +1125,19 @@ USER REQUEST: ${prompt}
 OUTPUT: Valid JSON only.`;
 
       const text = await callGemini(sysPrompt);
-      // Extract JSON from response
+      console.log('Gemini raw response:', text);
+      // Extract JSON - handle markdown code blocks
       let json = text;
-      const jsonMatch = text.match(/\{[\s\S]*\}/);
-      if (jsonMatch) json = jsonMatch[0];
-      return JSON.parse(json);
+      // Remove markdown code blocks if present
+      json = json.replace(/```json\s*/gi, '').replace(/```\s*/g, '');
+      // Find the JSON object
+      const jsonMatch = json.match(/\{[\s\S]*\}/);
+      if (!jsonMatch) throw new Error('No valid JSON found in response');
+      json = jsonMatch[0];
+      console.log('Extracted JSON:', json);
+      const config = JSON.parse(json);
+      console.log('Parsed config:', config);
+      return config;
     }
     
     async function editSiteConfig(instruction) {
@@ -1135,10 +1149,10 @@ User wants to: ${instruction}
 Update the config and output ONLY the complete updated JSON. Keep structure, only change what's requested.`;
       
       const text = await callGemini(sysPrompt);
-      let json = text;
-      const jsonMatch = text.match(/\{[\s\S]*\}/);
-      if (jsonMatch) json = jsonMatch[0];
-      return JSON.parse(json);
+      let json = text.replace(/```json\s*/gi, '').replace(/```\s*/g, '');
+      const jsonMatch = json.match(/\{[\s\S]*\}/);
+      if (!jsonMatch) throw new Error('No valid JSON found');
+      return JSON.parse(jsonMatch[0]);
     }
     
     async function callGemini(p) {
