@@ -9,7 +9,6 @@
   <style>
     * { font-family: 'Inter', sans-serif; }
     .gradient-bg { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
-    .preview-frame { background: white; }
   </style>
 </head>
 <body class="min-h-screen bg-gray-100">
@@ -38,8 +37,8 @@
 
         <div id="buildLoading" class="hidden flex-col items-center py-8">
           <div class="w-12 h-12 border-4 border-purple-200 border-t-purple-600 rounded-full animate-spin mb-4"></div>
-          <p class="text-gray-600">Building your site...</p>
-          <p class="text-gray-400 text-sm mt-1">~15 seconds</p>
+          <p id="loadingText" class="text-gray-600">Building your site...</p>
+          <p class="text-gray-400 text-sm mt-1">~30 seconds (generating custom images)</p>
         </div>
 
         <div id="buildError" class="hidden mt-6 p-4 bg-red-50 rounded-xl text-red-700">
@@ -47,7 +46,7 @@
           <button onclick="resetBuild()" class="mt-2 text-sm underline">Try again</button>
         </div>
       </div>
-      <p class="text-center text-white/60 text-sm mt-6">Powered by AI</p>
+      <p class="text-center text-white/60 text-sm mt-6">Powered by Gemini + Imagen</p>
     </div>
   </div>
 
@@ -72,24 +71,12 @@
       
       <!-- Chat Panel -->
       <div id="chatPanel" class="flex-1 flex flex-col bg-gray-50 lg:max-w-md lg:border-r">
-        
-        <!-- Messages -->
-        <div id="messages" class="flex-1 overflow-y-auto p-4 space-y-4">
-          <!-- Messages will be inserted here -->
-        </div>
-
-        <!-- Input -->
+        <div id="messages" class="flex-1 overflow-y-auto p-4 space-y-4"></div>
         <div class="p-4 bg-white border-t">
           <form id="chatForm" class="flex gap-2">
-            <input
-              type="text"
-              id="chatInput"
-              placeholder="Make the header blue..."
-              class="flex-1 px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-            >
-            <button type="submit" class="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-xl font-medium">
-              Send
-            </button>
+            <input type="text" id="chatInput" placeholder="Make the header blue..."
+              class="flex-1 px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+            <button type="submit" class="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-xl font-medium">Send</button>
           </form>
         </div>
       </div>
@@ -100,7 +87,6 @@
           <iframe id="previewFrame" class="w-full h-full border-0"></iframe>
         </div>
       </div>
-
     </div>
 
     <!-- Mobile Preview Modal -->
@@ -113,29 +99,28 @@
         <iframe id="mobilePreviewFrame" class="flex-1 bg-white"></iframe>
       </div>
     </div>
-
   </div>
 
   <script>
     const GEMINI_KEY = 'AIzaSyCt6kF7rVw--3CzfmmAuyTVYYzaNwrrKWY';
-    const API = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent';
+    const GEMINI_API = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent';
+    const IMAGEN_API = 'https://generativelanguage.googleapis.com/v1beta/models/imagen-4.0-fast-generate-001:predict';
     
     let currentHtml = '';
-    let conversationHistory = [];
+    let generatedImages = {};
     let isDesktop = window.innerWidth >= 1024;
 
-    // Elements
     const buildScreen = document.getElementById('buildScreen');
     const editorScreen = document.getElementById('editorScreen');
     const buildForm = document.getElementById('buildForm');
     const buildLoading = document.getElementById('buildLoading');
     const buildError = document.getElementById('buildError');
+    const loadingText = document.getElementById('loadingText');
     const chatForm = document.getElementById('chatForm');
     const chatInput = document.getElementById('chatInput');
     const messages = document.getElementById('messages');
     const previewFrame = document.getElementById('previewFrame');
     const previewPanel = document.getElementById('previewPanel');
-    const chatPanel = document.getElementById('chatPanel');
 
     // Build initial site
     buildForm.addEventListener('submit', async (e) => {
@@ -147,13 +132,21 @@
       buildLoading.classList.add('flex');
       
       try {
-        currentHtml = await generateSite(prompt);
-        conversationHistory.push({ role: 'user', text: prompt });
-        conversationHistory.push({ role: 'assistant', text: 'I created your site.' });
+        // Step 1: Generate image descriptions
+        loadingText.textContent = 'Planning images...';
+        const imageDescs = await getImageDescriptions(prompt);
+        
+        // Step 2: Generate images with Imagen
+        loadingText.textContent = `Generating ${imageDescs.length} images...`;
+        const imageUrls = await generateImages(imageDescs, prompt);
+        
+        // Step 3: Generate HTML with the images
+        loadingText.textContent = 'Building your site...';
+        currentHtml = await generateSite(prompt, imageUrls);
         
         showEditor();
         addMessage('user', prompt);
-        addMessage('assistant', '✨ Your site is ready! You can preview it and ask me to make any changes.');
+        addMessage('assistant', `✨ Your site is ready with ${imageDescs.length} custom AI-generated images! You can preview it and ask me to make changes.`);
         updatePreview();
       } catch (err) {
         buildLoading.classList.add('hidden');
@@ -162,52 +155,99 @@
       }
     });
 
-    // Handle chat messages
-    chatForm.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const text = chatInput.value.trim();
-      if (!text) return;
-      
-      chatInput.value = '';
-      addMessage('user', text);
-      
-      const thinkingId = addMessage('assistant', '🤔 Thinking...');
-      
-      try {
-        currentHtml = await editSite(text, currentHtml);
-        conversationHistory.push({ role: 'user', text });
-        conversationHistory.push({ role: 'assistant', text: 'Updated the site.' });
-        
-        updateMessage(thinkingId, '✅ Done! Check the preview.');
-        updatePreview();
-      } catch (err) {
-        updateMessage(thinkingId, '❌ ' + err.message);
-      }
-    });
+    // Get image descriptions from Gemini
+    async function getImageDescriptions(sitePrompt) {
+      const prompt = `For a website described as: "${sitePrompt}"
 
-    // Generate initial site
-    async function generateSite(prompt) {
+List 2-3 images that would be needed. For each, provide a detailed image generation prompt.
+Focus on: hero/banner image, and 1-2 supporting images.
+
+Return ONLY a JSON array of strings, each being an image prompt. Example:
+["A stunning mountain landscape at sunset with golden light", "Professional headshot of a person smiling"]
+
+Be specific about style, lighting, composition. No text in images.`;
+
+      const res = await fetch(`${GEMINI_API}?key=${GEMINI_KEY}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: prompt }] }],
+          generationConfig: { temperature: 0.7, maxOutputTokens: 1024 }
+        })
+      });
+
+      const data = await res.json();
+      const text = data.candidates?.[0]?.content?.parts?.[0]?.text || '[]';
+      const match = text.match(/\[[\s\S]*\]/);
+      return match ? JSON.parse(match[0]).slice(0, 3) : ['Abstract modern background'];
+    }
+
+    // Generate images with Imagen
+    async function generateImages(descriptions, context) {
+      const results = [];
+      
+      for (let i = 0; i < descriptions.length; i++) {
+        try {
+          const res = await fetch(`${IMAGEN_API}?key=${GEMINI_KEY}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              instances: [{ prompt: descriptions[i] + '. High quality, professional photography style.' }],
+              parameters: { sampleCount: 1 }
+            })
+          });
+
+          const data = await res.json();
+          if (data.predictions?.[0]?.bytesBase64Encoded) {
+            results.push({
+              description: descriptions[i],
+              dataUrl: 'data:image/png;base64,' + data.predictions[0].bytesBase64Encoded
+            });
+          }
+        } catch (err) {
+          console.error('Image generation failed:', err);
+        }
+        
+        loadingText.textContent = `Generating images (${i + 1}/${descriptions.length})...`;
+      }
+      
+      // Fallback to picsum if no images generated
+      if (results.length === 0) {
+        results.push({ description: 'Hero', dataUrl: 'https://picsum.photos/1200/600' });
+      }
+      
+      return results;
+    }
+
+    // Generate site with Gemini
+    async function generateSite(prompt, images) {
+      const imageList = images.map((img, i) => `Image ${i + 1}: ${img.dataUrl}`).join('\n');
+      
       const sysPrompt = `You are a professional web developer. Generate a COMPLETE, beautiful HTML5 website.
 
 REQUIREMENTS:
 - Valid HTML5 with <!DOCTYPE html>
 - Tailwind CSS via CDN: <script src="https://cdn.tailwindcss.com"><\/script>
-- Inter font from Google Fonts
+- Inter font from Google Fonts  
 - Mobile-first, fully responsive
 - Modern, clean design
-- Placeholder images from https://picsum.photos/
 - Proper SEO meta tags
+
+IMAGES TO USE (use these exact URLs in img src):
+${imageList}
+
+Use Image 1 as the hero/main image. Use others for sections like about, features, etc.
 
 USER REQUEST: ${prompt}
 
-IMPORTANT: The current year is ${new Date().getFullYear()}. Use this for any copyright notices or dates.
+IMPORTANT: The current year is ${new Date().getFullYear()}. Use this for any copyright notices.
 
 OUTPUT: Generate ONLY the complete HTML file, no markdown or explanations.`;
 
       return await callGemini(sysPrompt);
     }
 
-    // Edit existing site
+    // Edit site
     async function editSite(instruction, html) {
       const sysPrompt = `You are editing an existing website. Apply the user's requested changes.
 
@@ -216,13 +256,8 @@ ${html}
 
 USER REQUEST: ${instruction}
 
-REQUIREMENTS:
-- Keep all existing content unless asked to change it
-- Maintain the same structure and styling approach
-- Only modify what the user asked for
-- Keep Tailwind CSS classes
-
-IMPORTANT: The current year is ${new Date().getFullYear()}. Use this for any copyright notices or dates.
+Keep existing images unless asked to change them.
+IMPORTANT: The current year is ${new Date().getFullYear()}.
 
 OUTPUT: Generate ONLY the complete updated HTML file, no markdown or explanations.`;
 
@@ -230,7 +265,7 @@ OUTPUT: Generate ONLY the complete updated HTML file, no markdown or explanation
     }
 
     async function callGemini(prompt) {
-      const res = await fetch(`${API}?key=${GEMINI_KEY}`, {
+      const res = await fetch(`${GEMINI_API}?key=${GEMINI_KEY}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -249,14 +284,30 @@ OUTPUT: Generate ONLY the complete updated HTML file, no markdown or explanation
       return html.trim();
     }
 
+    // Chat handler
+    chatForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const text = chatInput.value.trim();
+      if (!text) return;
+      
+      chatInput.value = '';
+      addMessage('user', text);
+      const thinkingId = addMessage('assistant', '🤔 Thinking...');
+      
+      try {
+        currentHtml = await editSite(text, currentHtml);
+        updateMessage(thinkingId, '✅ Done! Check the preview.');
+        updatePreview();
+      } catch (err) {
+        updateMessage(thinkingId, '❌ ' + err.message);
+      }
+    });
+
     function showEditor() {
       buildScreen.classList.add('hidden');
       editorScreen.classList.remove('hidden');
       editorScreen.classList.add('flex');
-      
-      if (isDesktop) {
-        previewPanel.classList.remove('hidden');
-      }
+      if (isDesktop) previewPanel.classList.remove('hidden');
     }
 
     function addMessage(role, text) {
@@ -282,11 +333,9 @@ OUTPUT: Generate ONLY the complete updated HTML file, no markdown or explanation
       document.getElementById('mobilePreviewFrame').srcdoc = currentHtml;
     }
 
-    // Toggle preview on mobile
     document.getElementById('togglePreview').addEventListener('click', () => {
       if (isDesktop) {
         previewPanel.classList.toggle('hidden');
-        chatPanel.classList.toggle('lg:max-w-md');
       } else {
         document.getElementById('mobilePreview').classList.remove('hidden');
       }
@@ -296,7 +345,6 @@ OUTPUT: Generate ONLY the complete updated HTML file, no markdown or explanation
       document.getElementById('mobilePreview').classList.add('hidden');
     }
 
-    // Download
     document.getElementById('downloadSite').addEventListener('click', () => {
       const blob = new Blob([currentHtml], { type: 'text/html' });
       const a = document.createElement('a');
@@ -311,7 +359,6 @@ OUTPUT: Generate ONLY the complete updated HTML file, no markdown or explanation
       buildError.classList.add('hidden');
     }
 
-    // Handle resize
     window.addEventListener('resize', () => {
       isDesktop = window.innerWidth >= 1024;
       if (isDesktop && !editorScreen.classList.contains('hidden')) {
