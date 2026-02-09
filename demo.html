@@ -322,7 +322,8 @@ Be specific about style, lighting, composition. No text in images.`;
 
     // Generate site HTML
     async function generateSite(prompt, images) {
-      const imageList = images.map((img, i) => `Image ${i + 1}: ${img.dataUrl}`).join('\n');
+      // Create placeholder references (not the actual data URLs - too big!)
+      const imagePlaceholders = images.map((img, i) => `{{IMAGE_${i + 1}}} - ${img.description}`).join('\n');
       
       const sysPrompt = `You are a professional web developer. Generate a COMPLETE, beautiful HTML5 website.
 
@@ -334,10 +335,12 @@ REQUIREMENTS:
 - Modern, clean design
 - Proper SEO meta tags
 
-IMAGES TO USE (use these exact URLs):
-${imageList}
+IMAGES: Use these placeholders in img src attributes (they will be replaced with real images):
+${imagePlaceholders}
 
-Use Image 1 as hero. Use others for about/features sections.
+Example: <img src="{{IMAGE_1}}" alt="...">
+
+Use {{IMAGE_1}} as hero. Use others for about/features sections.
 
 USER REQUEST: ${prompt}
 
@@ -345,23 +348,51 @@ Current year: ${new Date().getFullYear()}
 
 OUTPUT: Complete HTML only, no markdown.`;
 
-      return await callGemini(sysPrompt);
+      let html = await callGemini(sysPrompt);
+      
+      // Replace placeholders with actual data URLs
+      images.forEach((img, i) => {
+        html = html.replace(new RegExp(`\\{\\{IMAGE_${i + 1}\\}\\}`, 'g'), img.dataUrl);
+      });
+      
+      return html;
     }
 
+    // Store images separately for editing
+    let storedImages = [];
+    
     // Edit site
     async function editSite(instruction, html) {
+      // Replace data URLs with placeholders to reduce token count
+      let htmlWithPlaceholders = html;
+      const dataUrlPattern = /data:image\/[^;]+;base64,[A-Za-z0-9+/=]+/g;
+      const dataUrls = html.match(dataUrlPattern) || [];
+      
+      dataUrls.forEach((url, i) => {
+        htmlWithPlaceholders = htmlWithPlaceholders.replace(url, `{{EXISTING_IMAGE_${i + 1}}}`);
+      });
+      
       const sysPrompt = `Edit this website per user request.
 
 CURRENT HTML:
-${html}
+${htmlWithPlaceholders}
+
+Note: {{EXISTING_IMAGE_X}} are placeholders for existing images - keep them as-is unless asked to change.
 
 USER REQUEST: ${instruction}
 
-Keep existing images. Current year: ${new Date().getFullYear()}.
+Current year: ${new Date().getFullYear()}.
 
 OUTPUT: Complete updated HTML only, no markdown.`;
 
-      return await callGemini(sysPrompt);
+      let newHtml = await callGemini(sysPrompt);
+      
+      // Restore data URLs
+      dataUrls.forEach((url, i) => {
+        newHtml = newHtml.replace(new RegExp(`\\{\\{EXISTING_IMAGE_${i + 1}\\}\\}`, 'g'), url);
+      });
+      
+      return newHtml;
     }
 
     async function callGemini(prompt) {
