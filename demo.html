@@ -435,6 +435,54 @@
       height: 16px;
     }
     
+    /* Page Tabs */
+    .page-tabs {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.5rem 1rem;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      overflow-x: auto;
+    }
+    
+    .page-tab {
+      padding: 0.5rem 1rem;
+      font-family: 'Outfit', sans-serif;
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: var(--text-muted);
+      background: none;
+      border: 1px solid var(--border);
+      border-radius: 0.5rem;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.2s ease;
+    }
+    
+    .page-tab:hover {
+      background: var(--surface-2);
+      color: var(--text);
+    }
+    
+    .page-tab.active {
+      background: var(--accent-1);
+      border-color: var(--accent-1);
+      color: white;
+    }
+    
+    .page-tab-add {
+      padding: 0.5rem;
+      color: var(--accent-1);
+      border: 1px dashed var(--accent-1);
+    }
+    
+    .page-tab-add:hover {
+      background: var(--accent-1);
+      border-style: solid;
+      color: white;
+    }
+    
     /* Tabs */
     .tabs {
       display: flex;
@@ -826,6 +874,10 @@
       </button>
     </div>
     
+    <div id="pageTabs" class="page-tabs" style="display:none;">
+      <!-- Dynamically populated with page buttons -->
+    </div>
+    
     <div class="tabs">
       <button id="tabChat" class="tab active">
         <i data-lucide="message-circle"></i> Chat
@@ -879,6 +931,7 @@
     const GEMINI_API = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent';
     
     let currentHtml = '', currentConfig = null, userPrompt = '', followUpCtx = '', pubEmail = '';
+    let currentPageId = 'home'; // Track which page we're viewing
     
     // ============ TEMPLATE SYSTEM ============
     const T = {
@@ -906,24 +959,43 @@ document.querySelectorAll('[data-needasite-form]').forEach(f=>f.addEventListener
 </body>
 </html>`,
 
-      nav: (d) => `<header class="bg-white border-b border-gray-100 sticky top-0 z-50">
+      nav: (d) => {
+        // Generate nav links - support both section links and page links
+        const pages = d.pages || [];
+        const currentPage = d.currentPage || 'home';
+        const links = d.links || ['Home','About','Services','Contact'];
+        
+        const renderLink = (l, isMobile = false) => {
+          // Check if this is a page link
+          const page = pages.find(p => p.name === l || p.id === l.toLowerCase());
+          if (page) {
+            const isActive = page.id === currentPage;
+            return `<a href="#" data-page="${page.id}" class="${isActive ? 'text-primary' : 'text-gray-600 hover:text-primary'} font-medium ${isMobile ? 'py-2 block' : ''}" onclick="event.preventDefault();window.parent.postMessage({type:'switchPage',pageId:'${page.id}'},'*')">${page.name}</a>`;
+          }
+          // Otherwise it's a section link
+          const closeMenu = isMobile ? ";document.getElementById('mobileMenuDropdown').classList.add('hidden')" : '';
+          return `<a href="#${l.toLowerCase()}" onclick="event.preventDefault();document.getElementById('${l.toLowerCase()}')?.scrollIntoView({behavior:'smooth'})${closeMenu}" class="text-gray-600 hover:text-primary font-medium ${isMobile ? 'py-2 block' : ''}">${l}</a>`;
+        };
+        
+        return `<header class="bg-white border-b border-gray-100 sticky top-0 z-50">
   <nav class="container mx-auto px-4 lg:px-8">
     <div class="flex items-center justify-between h-16 lg:h-20">
       <span class="text-xl lg:text-2xl font-bold text-gray-900">${d.logo||'Brand'}</span>
       <button id="menuBtn" class="lg:hidden p-2"><i data-lucide="menu" class="w-6 h-6"></i></button>
       <div id="mobileMenu" class="hidden lg:flex items-center gap-8">
-        ${(d.links||['Home','About','Services','Contact']).map(l=>`<a href="#${l.toLowerCase()}" onclick="event.preventDefault();document.getElementById('${l.toLowerCase()}')?.scrollIntoView({behavior:'smooth'})" class="text-gray-600 hover:text-primary font-medium">${l}</a>`).join('')}
+        ${links.map(l => renderLink(l, false)).join('')}
         ${d.cta?`<a href="#contact" onclick="event.preventDefault();document.getElementById('contact')?.scrollIntoView({behavior:'smooth'})" class="px-5 py-2.5 bg-primary text-white rounded-lg font-medium hover:opacity-90">${d.cta}</a>`:''}
       </div>
     </div>
     <div id="mobileMenuDropdown" class="hidden lg:hidden absolute left-0 right-0 top-full bg-white border-b border-gray-100 shadow-lg">
       <div class="container mx-auto px-4 py-4 flex flex-col gap-3">
-        ${(d.links||['Home','About','Services','Contact']).map(l=>`<a href="#${l.toLowerCase()}" onclick="event.preventDefault();document.getElementById('${l.toLowerCase()}')?.scrollIntoView({behavior:'smooth'});document.getElementById('mobileMenuDropdown').classList.add('hidden')" class="text-gray-600 hover:text-primary font-medium py-2">${l}</a>`).join('')}
+        ${links.map(l => renderLink(l, true)).join('')}
         ${d.cta?`<a href="#contact" onclick="event.preventDefault();document.getElementById('contact')?.scrollIntoView({behavior:'smooth'});document.getElementById('mobileMenuDropdown').classList.add('hidden')" class="px-5 py-2.5 bg-primary text-white rounded-lg font-medium hover:opacity-90 text-center">${d.cta}</a>`:''}
       </div>
     </div>
   </nav>
-</header>`,
+</header>`;
+      },
 
       hero: (d) => `<section id="home" class="bg-gradient-to-br from-gray-50 to-white">
   <div class="container mx-auto px-4 lg:px-8 py-16 lg:py-24">
@@ -1047,9 +1119,27 @@ document.querySelectorAll('[data-needasite-form]').forEach(f=>f.addEventListener
 </footer>`
     };
 
-    function renderSite(config) {
-      const sections = (config.sections||[]).map(s => T[s.type] ? T[s.type](s) : '').join('\n');
-      return T.base(config, sections);
+    function renderSite(config, pageId = 'home') {
+      // Support both old single-page format and new multi-page format
+      if (config.pages) {
+        // Multi-page: render shared nav + page sections + shared footer
+        const page = config.pages.find(p => p.id === pageId) || config.pages[0];
+        const shared = config.shared || {};
+        
+        let html = '';
+        // Always render nav first if exists
+        if (shared.nav) html += T.nav({...shared.nav, pages: config.pages, currentPage: pageId});
+        // Page-specific sections
+        html += (page.sections || []).map(s => T[s.type] ? T[s.type](s) : '').join('\n');
+        // Always render footer last if exists
+        if (shared.footer) html += T.footer(shared.footer);
+        
+        return T.base(config, html);
+      } else {
+        // Legacy single-page format
+        const sections = (config.sections||[]).map(s => T[s.type] ? T[s.type](s) : '').join('\n');
+        return T.base(config, sections);
+      }
     }
     // ============ END TEMPLATES ============
     
@@ -1085,10 +1175,11 @@ document.querySelectorAll('[data-needasite-form]').forEach(f=>f.addEventListener
       const full = followUpCtx ? `${userPrompt}\n\n${followUpCtx}` : userPrompt;
       try {
         currentConfig = await genSiteConfig(full);
-        if (!currentConfig || !currentConfig.sections) {
-          throw new Error('Invalid config: missing sections');
+        if (!currentConfig || (!currentConfig.sections && !currentConfig.pages)) {
+          throw new Error('Invalid config: missing sections or pages');
         }
-        currentHtml = renderSite(currentConfig);
+        currentPageId = currentConfig.pages?.[0]?.id || 'home';
+        currentHtml = renderSite(currentConfig, currentPageId);
         showEditor();
         addMsg('user', userPrompt);
         if (followUpCtx) addMsg('user', followUpCtx);
@@ -1103,29 +1194,52 @@ document.querySelectorAll('[data-needasite-form]').forEach(f=>f.addEventListener
     async function genSiteConfig(prompt) {
       const sysPrompt = `You are a website planner. Based on the user's request, output ONLY valid JSON (no markdown, no explanation).
 
-AVAILABLE SECTIONS: nav, hero, features, about, gallery, testimonials, contact, cta, footer
-
-OUTPUT THIS JSON STRUCTURE:
+MULTI-PAGE STRUCTURE (use this for all sites):
 {
-  "title": "Page Title",
+  "title": "Site Title",
   "description": "Meta description",
   "primaryColor": "#HEX",
-  "sections": [
-    { "type": "nav", "logo": "Brand Name", "links": ["Home", "About", "Services", "Contact"], "cta": "Get Started" },
-    { "type": "hero", "headline": "...", "subheadline": "...", "ctaPrimary": "...", "imageSeed": "unique-word" },
-    { "type": "features", "title": "...", "subtitle": "...", "items": [{"icon": "lucide-icon-name", "title": "...", "desc": "..."}] },
-    { "type": "about", "title": "...", "description": "...", "imageSeed": "unique-word", "stats": [{"value": "100+", "label": "Clients"}] },
-    { "type": "gallery", "title": "...", "images": ["seed1", "seed2", "seed3", "seed4", "seed5", "seed6"] },
-    { "type": "testimonials", "items": [{"quote": "...", "name": "...", "role": "..."}] },
-    { "type": "contact", "title": "...", "subtitle": "..." },
-    { "type": "cta", "title": "...", "subtitle": "...", "buttonText": "..." },
-    { "type": "footer", "logo": "Brand", "description": "...", "email": "...", "phone": "..." }
+  "shared": {
+    "nav": { "logo": "Brand", "links": ["Home", "About", "Services", "Contact"], "cta": "Get Started" },
+    "footer": { "logo": "Brand", "description": "...", "email": "...", "phone": "..." }
+  },
+  "pages": [
+    {
+      "id": "home",
+      "name": "Home",
+      "sections": [
+        { "type": "hero", "headline": "...", "subheadline": "...", "ctaPrimary": "...", "imageSeed": "unique-word" },
+        { "type": "features", "title": "...", "items": [{"icon": "star", "title": "...", "desc": "..."}] },
+        { "type": "cta", "title": "...", "buttonText": "..." }
+      ]
+    },
+    {
+      "id": "about",
+      "name": "About",
+      "sections": [
+        { "type": "about", "title": "...", "description": "...", "imageSeed": "unique", "stats": [{"value": "100+", "label": "Clients"}] },
+        { "type": "testimonials", "items": [{"quote": "...", "name": "...", "role": "..."}] }
+      ]
+    },
+    {
+      "id": "contact",
+      "name": "Contact",
+      "sections": [
+        { "type": "contact", "title": "...", "subtitle": "..." }
+      ]
+    }
   ]
 }
 
-ICON OPTIONS: star, zap, shield, heart, award, check, clock, users, target, globe, camera, palette, music, book, coffee, home, mail, phone, map-pin, briefcase, code, layers, settings, truck, gift, sun, moon
+IMPORTANT:
+- shared.nav and shared.footer appear on ALL pages automatically
+- Each page has unique sections
+- nav.links should match page names for navigation between pages
+- DO NOT put nav or footer in page sections - they're in shared
 
-Pick appropriate sections for the request. Include at least: nav, hero, contact, footer.
+AVAILABLE SECTIONS: hero, features, about, gallery, testimonials, contact, cta
+
+ICON OPTIONS: star, zap, shield, heart, award, check, clock, users, target, globe, camera, palette, music, book, coffee, home, mail, phone, map-pin, briefcase, code, layers, settings, truck, gift, sun, moon
 
 USER REQUEST: ${prompt}
 
@@ -1151,9 +1265,17 @@ OUTPUT: Valid JSON only.`;
       const sysPrompt = `Current site config:
 ${JSON.stringify(currentConfig, null, 2)}
 
+Currently viewing page: ${currentPageId}
+
 User wants to: ${instruction}
 
-Update the config and output ONLY the complete updated JSON. Keep structure, only change what's requested.`;
+IMPORTANT RULES:
+- If changing nav, footer, logo, colors, or site-wide elements: update "shared" object
+- If changing page-specific content (hero, features, etc.): update that page's sections
+- Changes to shared components (nav, footer) affect ALL pages
+- Output the COMPLETE updated JSON
+
+OUTPUT: Valid JSON only, no markdown.`;
       
       const text = await callGemini(sysPrompt);
       let json = text.replace(/```json\s*/gi, '').replace(/```\s*/g, '');
@@ -1188,8 +1310,80 @@ Update the config and output ONLY the complete updated JSON. Keep structure, onl
     function showEditor() {
       $('buildScreen').classList.add('hidden');
       $('editor').classList.add('visible');
+      updatePageTabs();
       lucide.createIcons();
     }
+    
+    function updatePageTabs() {
+      const container = $('pageTabs');
+      if (!currentConfig?.pages || currentConfig.pages.length <= 1) {
+        container.style.display = 'none';
+        return;
+      }
+      
+      container.style.display = 'flex';
+      container.innerHTML = currentConfig.pages.map(p => 
+        `<button class="page-tab ${p.id === currentPageId ? 'active' : ''}" data-page="${p.id}">${p.name}</button>`
+      ).join('') + `<button class="page-tab page-tab-add" id="addPageBtn">+ Add Page</button>`;
+      
+      // Add click handlers
+      container.querySelectorAll('.page-tab:not(.page-tab-add)').forEach(btn => {
+        btn.onclick = () => switchPage(btn.dataset.page);
+      });
+      
+      $('addPageBtn').onclick = addNewPage;
+    }
+    
+    function switchPage(pageId) {
+      currentPageId = pageId;
+      currentHtml = renderSite(currentConfig, currentPageId);
+      updatePreview();
+      updatePageTabs();
+    }
+    
+    async function addNewPage() {
+      const pageName = prompt('New page name:');
+      if (!pageName) return;
+      
+      const pageId = pageName.toLowerCase().replace(/\s+/g, '-');
+      
+      // Ask AI to generate sections for the new page
+      addMsg('assistant', `Creating ${pageName} page...`);
+      
+      try {
+        const prompt = `Add a new page to this site config.
+
+Current config:
+${JSON.stringify(currentConfig, null, 2)}
+
+Add a new page with id "${pageId}" and name "${pageName}".
+Generate appropriate sections for this page based on the site's purpose.
+Also add "${pageName}" to shared.nav.links.
+
+Output the complete updated JSON.`;
+
+        const text = await callGemini(prompt);
+        let json = text.replace(/```json\s*/gi, '').replace(/```\s*/g, '');
+        const jsonMatch = json.match(/\{[\s\S]*\}/);
+        if (!jsonMatch) throw new Error('No valid JSON found');
+        
+        currentConfig = JSON.parse(jsonMatch[0]);
+        currentPageId = pageId;
+        currentHtml = renderSite(currentConfig, currentPageId);
+        updatePreview();
+        updatePageTabs();
+        addMsg('assistant', `Added ${pageName} page! Check Preview.`);
+      } catch (err) {
+        addMsg('assistant', 'Error adding page: ' + err.message);
+      }
+    }
+    
+    // Listen for page switch messages from iframe
+    window.addEventListener('message', e => {
+      if (e.data?.type === 'switchPage' && e.data.pageId) {
+        switchPage(e.data.pageId);
+      }
+    });
     
     $('chatForm').addEventListener('submit', async e => {
       e.preventDefault();
@@ -1200,7 +1394,8 @@ Update the config and output ONLY the complete updated JSON. Keep structure, onl
       const id = addMsg('assistant', 'Updating...');
       try {
         currentConfig = await editSiteConfig(t);
-        currentHtml = renderSite(currentConfig);
+        currentHtml = renderSite(currentConfig, currentPageId);
+        updatePageTabs();
         updMsg(id, 'Done! Check Preview.');
         updatePreview();
       } catch (err) { updMsg(id, 'Error: ' + err.message); }
